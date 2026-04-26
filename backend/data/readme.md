@@ -1,0 +1,1 @@
+aqui vai ficar Dados locais do backend: compras e banco de dados quando aplicável.
