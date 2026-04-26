@@ -7,9 +7,11 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-//import { getAllUsuarios, deleteUsuario } from "../services/database";
+import { getAllUsuarios, deleteUsuario } from "./database";
+import { useFocusEffect, useRouter } from "expo-router";
 
-export default function UserListScreen({ navigation }) {
+export default function UserListScreen() {
+  const navigation = useRouter();
   const [usuarios, setUsuarios] = useState([]);
 
   const carregarUsuarios = async () => {
@@ -31,16 +33,9 @@ export default function UserListScreen({ navigation }) {
       Alert.alert("Erro", "Não foi possível excluir.");
     }
   };
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", () => {
-      carregarUsuarios();
-    });
-
+  useFocusEffect(() => {
     carregarUsuarios();
-
-    return unsubscribe;
-  }, [navigation]);
+  });
 
   return (
     <View style={styles.container}>
@@ -48,14 +43,14 @@ export default function UserListScreen({ navigation }) {
 
       <TouchableOpacity
         style={styles.botaoNovo}
-        onPress={() => navigation.navigate("SignIn")}
+        onPress={() => navigation.navigate("SignInScreen")}
       >
         <Text style={styles.botaoTexto}>Novo cadastro</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.botaoJson}
-        onPress={() => navigation.navigate("JsonData")}
+        onPress={() => navigation.navigate("JsonDataScreen")}
       >
         <Text style={styles.botaoTexto}>Ver JSON</Text>
       </TouchableOpacity>

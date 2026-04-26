@@ -6,7 +6,11 @@ import {
   ScrollView,
 } from "react-native";
 
-export default function AdminDashboardScreen({ navigation }) {
+import { useRouter } from "expo-router";
+
+export default function AdminDashboardScreen() {
+  const router = useRouter();
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Painel Administrativo</Text>
@@ -16,7 +20,7 @@ export default function AdminDashboardScreen({ navigation }) {
 
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate("UserList")}
+        onPress={() => router.push("/UserListScreen")}
       >
         <Text style={styles.cardTitle}>Usuários</Text>
         <Text style={styles.cardText}>
@@ -26,7 +30,7 @@ export default function AdminDashboardScreen({ navigation }) {
 
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate("AdminProductList")}
+        onPress={() => router.push("/AdminProductListScreen")}
       >
         <Text style={styles.cardTitle}>Produtos / Livros</Text>
         <Text style={styles.cardText}>
@@ -36,7 +40,7 @@ export default function AdminDashboardScreen({ navigation }) {
 
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate("AdminCategoryList")}
+        onPress={() => router.push("/AdminCategoryListScreen")}
       >
         <Text style={styles.cardTitle}>Categorias</Text>
         <Text style={styles.cardText}>
@@ -46,7 +50,7 @@ export default function AdminDashboardScreen({ navigation }) {
 
       <TouchableOpacity
         style={styles.card}
-        onPress={() => navigation.navigate("JsonData")}
+        onPress={() => router.push("/JsonDataScreen")}
       >
         <Text style={styles.cardTitle}>Dashboard JSON</Text>
         <Text style={styles.cardText}>
