@@ -5,33 +5,35 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-//import { createUsuario } from "../services/database";
+import { useNavigation } from "@react-navigation/native";
+
+import { loginUser } from "../services/database";
 import { Color, Border, FontSize, FontFamily } from "../styles/GlobalStyles";
 
-export default function SignInScreen({ navigation }) {
-  const [nome, setNome] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [dataNascimento, setDataNascimento] = useState("");
+export default function LogInScreen() {
+  const navigation = useNavigation(); 
+
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  const handleCadastro = async () => {
-    try {
-      if (!nome || !email) {
-        Alert.alert("Atenção", "Preencha nome e e-mail.");
-        return;
-      }
+  const handleLogin = async () => {
+    console.log({ email, senha });
 
-      await createUsuario(nome, email, cpf, dataNascimento);
+    const user = await loginUser(email, senha);
 
-      Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
-      navigation.navigate("UserList");
-    } catch (error) {
-      console.log("Erro ao salvar usuário:", error);
-      Alert.alert("Erro", "Não foi possível salvar o usuário.");
+    if (!user) {
+      alert("Email ou senha inválidos");
+      return;
+    }
+
+    console.log("LOGIN OK:", user);
+
+    if (user.tipo_usuario === "admin") {
+      navigation.replace("AdminDashboard"); 
+    } else {
+      navigation.replace("Home"); 
     }
   };
 
@@ -42,23 +44,15 @@ export default function SignInScreen({ navigation }) {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>Crie sua conta!</Text>
-
-        <Text style={styles.label}>Nome</Text>
-        <TextInput style={styles.input} value={nome} onChangeText={setNome} />
-
-        <Text style={styles.label}>CPF</Text>
-        <TextInput style={styles.input} value={cpf} onChangeText={setCpf} />
-
-        <Text style={styles.label}>Data de Nascimento</Text>
-        <TextInput
-          style={styles.input}
-          value={dataNascimento}
-          onChangeText={setDataNascimento}
-        />
+        <Text style={styles.title}>Faça seu login</Text>
 
         <Text style={styles.label}>E-mail</Text>
-        <TextInput style={styles.input} value={email} onChangeText={setEmail} />
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+        />
 
         <Text style={styles.label}>Senha</Text>
         <TextInput
@@ -68,8 +62,19 @@ export default function SignInScreen({ navigation }) {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleCadastro}>
-          <Text style={styles.buttonText}>Cadastrar-se</Text>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Entrar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+          <Text>Esqueci minha senha</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
+          <Text style={styles.link}>
+            Já possui uma conta?{" "}
+            <Text style={styles.linkBold}>Cadastre-se</Text>
+          </Text>
         </TouchableOpacity>
       </View>
     </KeyboardAwareScrollView>
@@ -81,22 +86,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Color.colorSteelblue,
   },
+
   container: {
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
+
   card: {
     backgroundColor: "#fff",
-    width: "100%",
+    width: "90%",
     borderRadius: Border.br_30,
     padding: 20,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
   },
+
   title: {
     fontSize: 28,
     fontFamily: FontFamily.poppinsBold,
@@ -104,17 +108,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
+
   label: {
     fontSize: FontSize.fs_16,
     fontFamily: FontFamily.poppinsSemiBold,
     marginBottom: 5,
   },
+
   input: {
     backgroundColor: Color.colorWhitesmoke,
     borderRadius: Border.br_15,
     padding: 12,
     marginBottom: 15,
   },
+
   button: {
     backgroundColor: Color.colorSteelblue,
     borderRadius: 50,
@@ -122,8 +129,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
+
   buttonText: {
     color: "#fff",
     fontFamily: FontFamily.poppinsSemiBold,
+  },
+
+  link: {
+    textAlign: "center",
+    marginTop: 20,
+    color: "#666",
+  },
+
+  linkBold: {
+    color: Color.colorSteelblue,
+    fontWeight: "bold",
   },
 });

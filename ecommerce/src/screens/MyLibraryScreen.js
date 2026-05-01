@@ -15,13 +15,13 @@ export default function MyLibraryScreen({ navigation }) {
       id: "1",
       titulo: "A hipótese do amor",
       preco: "R$43,81",
-      imagem: require("../assets/images/AHipotese.jpg"),
+      imagem: require("../../assets/images/AHipotese.jpg"),
     },
     {
       id: "2",
       titulo: "Nós já moramos aqui",
       preco: "R$64,80",
-      imagem: require("../assets/images/images (2).jpg"),
+      imagem: require("../../assets/images/images (2).jpg"),
     },
   ];
 

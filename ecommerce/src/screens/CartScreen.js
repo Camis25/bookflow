@@ -19,7 +19,7 @@ export default function CartScreen({ navigation }) {
       preco: 43.81,
       quantidade: 1,
       selecionado: true,
-      imagem: require("../assets/images/AHipotese.jpg"),
+      imagem: require("../../assets/images/AHipotese.jpg"),
     },
     {
       id: "2",
@@ -27,14 +27,14 @@ export default function CartScreen({ navigation }) {
       preco: 64.8,
       quantidade: 1,
       selecionado: true,
-      imagem: require("../assets/images/images (2).jpg"),
+      imagem: require("../../assets/images/images (2).jpg"),
     },
   ]);
 
   const recomendados = [
-    { id: "1", imagem: require("../assets/images/AHipotese.jpg") },
-    { id: "2", imagem: require("../assets/images/images (2).jpg") },
-    { id: "3", imagem: require("../assets/images/AHipotese.jpg") },
+    { id: "1", imagem: require("../../assets/images/AHipotese.jpg") },
+    { id: "2", imagem: require("../../assets/images/images (2).jpg") },
+    { id: "3", imagem: require("../../assets/images/AHipotese.jpg") },
   ];
 
   // ✅ TOTAL DINÂMICO

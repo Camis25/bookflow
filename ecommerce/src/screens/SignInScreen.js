@@ -5,33 +5,33 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { useRouter } from "expo-router";
-
-import { loginUser } from "./database";
+import { createUsuario } from "../services/database";
 import { Color, Border, FontSize, FontFamily } from "../styles/GlobalStyles";
 
-export default function LogInScreen() {
-  const router = useRouter();
-
+export default function SignInScreen({ navigation }) {
+  const [nome, setNome] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  const handleLogin = async () => {
-    console.log({ email, senha });
+  const handleCadastro = async () => {
+    try {
+      if (!nome || !email) {
+        Alert.alert("Atenção", "Preencha nome e e-mail.");
+        return;
+      }
 
-    const user = await loginUser(email, senha);
+      await createUsuario(nome, email, cpf, dataNascimento);
 
-    if (!user) {
-      alert("Email ou senha inválidos");
-      return;
-    }
-
-    if (user.tipo_usuario === "admin") {
-      router.replace("/AdminDashboardScreen");
-    } else {
-      router.replace("/HomeScreen");
+      Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
+      navigation.navigate("UserList");
+    } catch (error) {
+      console.log("Erro ao salvar usuário:", error);
+      Alert.alert("Erro", "Não foi possível salvar o usuário.");
     }
   };
 
@@ -42,15 +42,23 @@ export default function LogInScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>Faça seu login</Text>
+        <Text style={styles.title}>Crie sua conta!</Text>
 
-        <Text style={styles.label}>E-mail</Text>
+        <Text style={styles.label}>Nome</Text>
+        <TextInput style={styles.input} value={nome} onChangeText={setNome} />
+
+        <Text style={styles.label}>CPF</Text>
+        <TextInput style={styles.input} value={cpf} onChangeText={setCpf} />
+
+        <Text style={styles.label}>Data de Nascimento</Text>
         <TextInput
           style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
+          value={dataNascimento}
+          onChangeText={setDataNascimento}
         />
+
+        <Text style={styles.label}>E-mail</Text>
+        <TextInput style={styles.input} value={email} onChangeText={setEmail} />
 
         <Text style={styles.label}>Senha</Text>
         <TextInput
@@ -60,19 +68,8 @@ export default function LogInScreen() {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Entrar</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => router.push("/ForgotPasswordScreen")}>
-          <Text>Esqueci minha senha</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => router.push("/SignInScreen")}>
-          <Text style={styles.link}>
-            Já possui uma conta?{" "}
-            <Text style={styles.linkBold}>Cadastre-se</Text>
-          </Text>
+        <TouchableOpacity style={styles.button} onPress={handleCadastro}>
+          <Text style={styles.buttonText}>Cadastrar-se</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAwareScrollView>
@@ -84,21 +81,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Color.colorSteelblue,
   },
-
   container: {
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
-
   card: {
     backgroundColor: "#fff",
-    width: "90%",
+    width: "100%",
     borderRadius: Border.br_30,
     padding: 20,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
   },
-
   title: {
     fontSize: 28,
     fontFamily: FontFamily.poppinsBold,
@@ -106,20 +104,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-
   label: {
     fontSize: FontSize.fs_16,
     fontFamily: FontFamily.poppinsSemiBold,
     marginBottom: 5,
   },
-
   input: {
     backgroundColor: Color.colorWhitesmoke,
     borderRadius: Border.br_15,
     padding: 12,
     marginBottom: 15,
   },
-
   button: {
     backgroundColor: Color.colorSteelblue,
     borderRadius: 50,
@@ -127,20 +122,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
-
   buttonText: {
     color: "#fff",
     fontFamily: FontFamily.poppinsSemiBold,
-  },
-
-  link: {
-    textAlign: "center",
-    marginTop: 20,
-    color: "#666",
-  },
-
-  linkBold: {
-    color: Color.colorSteelblue,
-    fontWeight: "bold",
   },
 });

@@ -9,7 +9,7 @@ import {
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../theme";
-//import { getAllLivros } from "../services/database";
+import { getAllLivros } from "../services/database";
 import BottomNavBar from "../components/BottomNavBar";
 
 // ─── Styled Components ────────────────────────────────────────────────────────
@@ -236,13 +236,13 @@ export default function StoreHomeScreen({ navigation }) {
           contentContainerStyle={{ paddingRight: 16 }}
         >
           <BannerImage
-            source={require("../assets/images/NaoFiccao.jpg")}
+            source={require("../../assets/images/NaoFiccao.jpg")}
             imageStyle={{ borderRadius: 12 }}
             resizeMode="cover"
           />
 
           <BannerImage
-            source={require("../assets/images/Terror.jpg")}
+            source={require("../../assets/images/Terror.jpg")}
             imageStyle={{ borderRadius: 12 }}
             resizeMode="cover"
           />

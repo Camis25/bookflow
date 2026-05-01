@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { getAllUsuarios, deleteUsuario } from "./database";
+import { getAllUsuarios, deleteUsuario } from "../services/database";
 import { useFocusEffect, useRouter } from "expo-router";
 
 export default function UserListScreen() {

@@ -23,7 +23,7 @@ export default function BookDetailsScreen({ navigation }) {
         {/* IMAGEM SOBREPOSTA */}
         <View style={styles.imageWrapper}>
           <Image
-            source={require("../assets/images/AHipotese.jpg")}
+            source={require("../../assets/images/AHipotese.jpg")}
             style={styles.image}
           />
         </View>
