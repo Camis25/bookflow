@@ -115,26 +115,28 @@ export const getAllLivros = async () => {
   }
 };
 
-export const insertLivro = async (titulo, preco, estoque) => {
-  try {
-    const result = await db.runAsync(
-      `INSERT INTO tb_livro (titulo_livro, preco, estoque)
-       VALUES (?, ?, ?)`,
-      [titulo, preco, estoque]
-    );
-    return result;
-  } catch (error) {
-    console.error(error);
-  }
+export const insertLivro = async (
+  titulo,
+  preco,
+  estoque,
+  categoria,
+  imagem
+) => {
+  await db.runAsync(
+    `INSERT INTO tb_livro 
+    (titulo_livro, preco, estoque, id_categoria, capa_livro)
+    VALUES (?, ?, ?, ?, ?)`,
+    [titulo, preco, estoque, categoria, imagem]
+  );
 };
 
-export const updateLivro = async (id, titulo, preco, estoque) => {
+export const updateLivro = async (id, titulo, preco, estoque, id_categoria) => {
   try {
     await db.runAsync(
       `UPDATE tb_livro
-       SET titulo_livro = ?, preco = ?, estoque = ?
+       SET titulo_livro = ?, preco = ?, estoque = ?, id_categoria = ?
        WHERE id_livro = ?`,
-      [titulo, preco, estoque, id]
+      [titulo, preco, estoque, id_categoria, id]
     );
   } catch (error) {
     console.error(error);
@@ -162,6 +164,72 @@ export const getAllUsuarios = async () => {
   } catch (error) {
     console.error(error);
     return [];
+  }
+};
+
+export const deleteUsuario = async (id) => {
+  try {
+    const result = await db.runAsync(
+      `DELETE FROM tb_usuario 
+       WHERE id_usuario = ? AND tipo_usuario != 'admin'`,
+      [id]
+    );
+
+    if (result.changes === 0) {
+      throw new Error("Não é possível excluir um administrador.");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Erro ao deletar usuário:", error);
+    throw error;
+  }
+};
+
+// ─────────────────────────────────────────────
+// 🗂️ CATEGORIAS
+// ─────────────────────────────────────────────
+export const getAllCategorias = async () => {
+  try {
+    return await db.getAllAsync(
+      `SELECT * FROM tb_categoria ORDER BY nome_categoria`
+    );
+  } catch (error) {
+    console.error("Erro ao buscar categorias:", error);
+    return [];
+  }
+};
+
+export const insertCategoria = async (nome) => {
+  try {
+    await db.runAsync(
+      `INSERT INTO tb_categoria (nome_categoria) VALUES (?)`,
+      [nome]
+    );
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const updateCategoria = async (id, nome) => {
+  try {
+    await db.runAsync(
+      `UPDATE tb_categoria SET nome_categoria = ? WHERE id_categoria = ?`,
+      [nome, id]
+    );
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const deleteCategoria = async (id) => {
+  try {
+    await db.runAsync(
+      `DELETE FROM tb_categoria WHERE id_categoria = ?`,
+      [id]
+    );
+  } catch (error) {
+    console.error(error);
   }
 };
 

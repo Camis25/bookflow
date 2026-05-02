@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,9 @@ import {
   Alert,
 } from "react-native";
 import { getAllUsuarios, deleteUsuario } from "../services/database";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 
-export default function UserListScreen() {
-  const navigation = useRouter();
+export default function UserListScreen({ navigation }) {
   const [usuarios, setUsuarios] = useState([]);
 
   const carregarUsuarios = async () => {
@@ -33,9 +32,32 @@ export default function UserListScreen() {
       Alert.alert("Erro", "Não foi possível excluir.");
     }
   };
-  useFocusEffect(() => {
-    carregarUsuarios();
-  });
+
+  const confirmarExclusao = (usuario) => {
+  if (usuario.tipo_usuario === "admin") {
+    Alert.alert("Ação não permitida", "Não é possível excluir o administrador.");
+    return;
+  }
+
+  Alert.alert(
+    "Confirmar",
+    "Deseja realmente excluir este usuário?",
+    [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir",
+        onPress: () => excluirUsuario(usuario.id_usuario),
+        style: "destructive",
+      },
+    ]
+  );
+};
+
+  useFocusEffect(
+    React.useCallback(() => {
+      carregarUsuarios();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -43,31 +65,30 @@ export default function UserListScreen() {
 
       <TouchableOpacity
         style={styles.botaoNovo}
-        onPress={() => navigation.navigate("SignInScreen")}
+        onPress={() => navigation.navigate("SignIn")}
       >
         <Text style={styles.botaoTexto}>Novo cadastro</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.botaoJson}
-        onPress={() => navigation.navigate("JsonDataScreen")}
+        onPress={() => navigation.navigate("JsonData")}
       >
         <Text style={styles.botaoTexto}>Ver JSON</Text>
       </TouchableOpacity>
 
       <FlatList
         data={usuarios}
-        keyExtractor={(item) => String(item.id)}
+        keyExtractor={(item) => String(item.id_usuario)}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.nome}>{item.nome}</Text>
-            <Text>{item.email}</Text>
-            <Text>{item.cpf || "Sem CPF"}</Text>
-            <Text>{item.data_nascimento || "Sem data de nascimento"}</Text>
+            <Text style={styles.nome}>{item.nome_usuario}</Text>
+            <Text>{item.email_usuario}</Text>
+            <Text>{item.tipo_usuario || "Usuário comum"}</Text>
 
             <TouchableOpacity
               style={styles.botaoExcluir}
-              onPress={() => excluirUsuario(item.id)}
+              onPress={() => confirmarExclusao(item)}
             >
               <Text style={styles.botaoTexto}>Excluir</Text>
             </TouchableOpacity>

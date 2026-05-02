@@ -3,7 +3,12 @@ import { FlatList, Alert, View, Modal, KeyboardAvoidingView, Platform } from 're
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
-//import { getAllCategorias } from '../services/database';
+import { 
+  getAllCategorias,
+  insertCategoria,
+  updateCategoria,
+  deleteCategoria
+} from '../services/database';
 
 // ─── Styled Components ────────────────────────────────────────────────────────
 
@@ -67,7 +72,6 @@ const NovoBtnText = styled.Text`
   font-weight: bold;
 `;
 
-// Categoria Tag
 const CategoryCard = styled.View`
   background-color: ${theme.colors.inputBg};
   border-radius: 16px;
@@ -78,10 +82,6 @@ const CategoryCard = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  elevation: 2;
-  shadow-color: #000;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
 `;
 
 const CategoryLabel = styled.Text`
@@ -92,20 +92,17 @@ const CategoryLabel = styled.Text`
 
 const ActionsRow = styled.View`
   flex-direction: row;
-  align-items: center;
 `;
 
 const ActionIconBtn = styled.TouchableOpacity`
-  padding: 4px;
-  margin-left: 8px;
+  margin-left: 10px;
 `;
 
 const Loader = styled.ActivityIndicator`
   margin-top: 40px;
 `;
 
-// ─── Modal Form (Criar/Editar Categoria) ──────────────────────────────────────
-
+// Modal
 const Overlay = styled.View`
   flex: 1;
   background-color: rgba(0,0,0,0.4);
@@ -117,66 +114,44 @@ const ModalBox = styled.View`
   width: 320px;
   background-color: ${theme.colors.white};
   border-radius: 16px;
-  padding: 32px 24px;
-  align-items: center;
+  padding: 24px;
 `;
 
 const ModalTitle = styled.Text`
-  font-size: 20px;
-  font-weight: 800;
-  color: ${theme.colors.primary};
-  margin-bottom: 24px;
-`;
-
-const ModalInputGroup = styled.View`
-  width: 100%;
-  margin-bottom: 24px;
-`;
-
-const ModalLabel = styled.Text`
-  font-size: 12px;
-  color: ${theme.colors.primary};
-  margin-bottom: 8px;
-  margin-left: 4px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
 `;
 
 const ModalInput = styled.TextInput`
   background-color: ${theme.colors.inputBg};
   border-radius: 12px;
-  min-height: 48px;
-  padding: 0 16px;
-  font-size: 14px;
-  color: ${theme.colors.text};
+  padding: 12px;
+  margin-bottom: 20px;
 `;
 
 const ButtonsRow = styled.View`
   flex-direction: row;
-  justify-content: center;
-  width: 100%;
+  justify-content: space-between;
 `;
 
-const ModalActionBtn = styled.TouchableOpacity`
-  border-radius: 16px;
-  padding-vertical: 10px;
-  padding-horizontal: 32px;
-  margin-horizontal: 8px;
-  background-color: ${props => props.cancel ? '#a3d18c' : theme.colors.primary}; /* verde claro para cancel, azul para salvar baseado na imagem */
+const Btn = styled.TouchableOpacity`
+  background-color: ${props => props.cancel ? '#ccc' : theme.colors.primary};
+  padding: 10px 20px;
+  border-radius: 10px;
 `;
 
-const ModalActionBtnText = styled.Text`
-  color: ${theme.colors.white};
-  font-size: 12px;
+const BtnText = styled.Text`
+  color: #fff;
   font-weight: bold;
 `;
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+// ─── SCREEN ───────────────────────────────────────────────────────────────────
 
 export default function AdminCategoryListScreen({ navigation }) {
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // States do Modal
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCat, setEditingCat] = useState(null);
   const [inputValue, setInputValue] = useState('');
@@ -185,54 +160,80 @@ export default function AdminCategoryListScreen({ navigation }) {
     try {
       setLoading(true);
       const data = await getAllCategorias();
-      if (data.length > 0) {
-        setCategorias(data);
-      } else {
-        setCategorias([{ id: 1, nome: 'Romance' }, { id: 2, nome: 'Terror' }]); // Mocks Default
-      }
-    } catch (_) {
-      setCategorias([{ id: 1, nome: 'Romance' }, { id: 2, nome: 'Terror' }]);
+      setCategorias(data);
+    } catch (error) {
+      console.log(error);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { loadCategorias(); }, [loadCategorias]);
+  useEffect(() => {
+    loadCategorias();
+  }, []);
 
-  const openNewCategory = () => {
+  const openNew = () => {
     setEditingCat(null);
     setInputValue('');
     setModalVisible(true);
   };
 
-  const openEditCategory = (cat) => {
+  const openEdit = (cat) => {
     setEditingCat(cat);
-    setInputValue(cat.nome);
+    setInputValue(cat.nome_categoria);
     setModalVisible(true);
   };
 
-  const handleSave = () => {
-    setModalVisible(false);
-    Alert.alert('Sucesso', 'Categoria salva com sucesso!');
-    // A integração real no DB pode ser feita aqui.
+  const handleSave = async () => {
+    if (!inputValue.trim()) {
+      Alert.alert("Erro", "Digite um nome");
+      return;
+    }
+
+    try {
+      if (editingCat) {
+        await updateCategoria(editingCat.id_categoria, inputValue);
+      } else {
+        await insertCategoria(inputValue);
+      }
+
+      setModalVisible(false);
+      loadCategorias();
+
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Erro", "Falha ao salvar");
+    }
   };
 
   const handleDelete = (cat) => {
-    Alert.alert('Tem certeza?', 'Tem certeza que deseja excluir essa categoria?', [
-      { text: 'Não', style: 'cancel' },
-      { text: 'Sim', onPress: () => Alert.alert('Excluído', 'Categoria apagada.') }
-    ]);
+    Alert.alert(
+      "Confirmar",
+      "Deseja excluir?",
+      [
+        { text: "Cancelar" },
+        {
+          text: "Excluir",
+          onPress: async () => {
+            await deleteCategoria(cat.id_categoria);
+            loadCategorias();
+          }
+        }
+      ]
+    );
   };
 
   const renderItem = ({ item }) => (
     <CategoryCard>
-      <CategoryLabel>{item.nome}</CategoryLabel>
+      <CategoryLabel>{item.nome_categoria}</CategoryLabel>
+
       <ActionsRow>
         <ActionIconBtn onPress={() => handleDelete(item)}>
-          <Ionicons name="trash" size={14} color={theme.colors.textSecondary} />
+          <Ionicons name="trash" size={16} />
         </ActionIconBtn>
-        <ActionIconBtn onPress={() => openEditCategory(item)}>
-           <Ionicons name="pencil" size={14} color={theme.colors.textSecondary} />
+
+        <ActionIconBtn onPress={() => openEdit(item)}>
+          <Ionicons name="pencil" size={16} />
         </ActionIconBtn>
       </ActionsRow>
     </CategoryCard>
@@ -242,7 +243,7 @@ export default function AdminCategoryListScreen({ navigation }) {
     <Screen>
       <HeaderGroup>
         <BackBtn onPress={() => navigation.goBack()}>
-           <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </BackBtn>
         <HeaderTitleText>Categorias</HeaderTitleText>
       </HeaderGroup>
@@ -250,47 +251,43 @@ export default function AdminCategoryListScreen({ navigation }) {
       <Content>
         <TopRow>
           <MainTitle>Categorias</MainTitle>
-          <NovoBtn onPress={openNewCategory}>
+          <NovoBtn onPress={openNew}>
             <NovoBtnText>Novo</NovoBtnText>
           </NovoBtn>
         </TopRow>
 
         {loading ? (
-          <Loader size="large" color={theme.colors.primary} />
+          <Loader size="large" />
         ) : (
           <FlatList
             data={categorias}
-            keyExtractor={item => String(item.id)}
+            keyExtractor={(item) => String(item.id_categoria)}
             renderItem={renderItem}
-            numColumns={2}
-            columnWrapperStyle={{ justifyContent: 'space-between', gap: 16 }}
-            style={{ width: '100%' }}
-            showsVerticalScrollIndicator={false}
           />
         )}
       </Content>
 
-      <Modal transparent visible={modalVisible} animationType="fade">
+      <Modal visible={modalVisible} transparent>
         <Overlay>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ModalBox>
-              <ModalTitle>{editingCat ? 'Editar Categoria' : 'Nova Categoria'}</ModalTitle>
-              
-              <ModalInputGroup>
-                <ModalLabel>Categoria</ModalLabel>
-                <ModalInput 
-                  value={inputValue}
-                  onChangeText={setInputValue}
-                />
-              </ModalInputGroup>
+              <ModalTitle>
+                {editingCat ? "Editar" : "Nova"} Categoria
+              </ModalTitle>
+
+              <ModalInput
+                value={inputValue}
+                onChangeText={setInputValue}
+              />
 
               <ButtonsRow>
-                <ModalActionBtn onPress={handleSave}>
-                  <ModalActionBtnText>Salvar</ModalActionBtnText>
-                </ModalActionBtn>
-                <ModalActionBtn cancel onPress={() => setModalVisible(false)}>
-                  <ModalActionBtnText>Cancelar</ModalActionBtnText>
-                </ModalActionBtn>
+                <Btn onPress={handleSave}>
+                  <BtnText>Salvar</BtnText>
+                </Btn>
+
+                <Btn cancel onPress={() => setModalVisible(false)}>
+                  <BtnText>Cancelar</BtnText>
+                </Btn>
               </ButtonsRow>
             </ModalBox>
           </KeyboardAvoidingView>

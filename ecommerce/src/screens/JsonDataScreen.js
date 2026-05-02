@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, ActivityIndicator, Alert } from 'react-native';
+import { ActivityIndicator, Alert } from 'react-native';
 import styled from 'styled-components/native';
-//import { gerarDadosJsonDashboard } from '../services/database';
+import { getDashboardData } from '../services/database';
 
 const Container = styled.SafeAreaView`
   flex: 1;
@@ -32,9 +32,10 @@ export default function JsonDataScreen() {
   useEffect(() => {
     const carregarJson = async () => {
       try {
-        const data = await gerarDadosJsonDashboard();
+        const data = await getDashboardData();
         setJsonData(JSON.stringify(data, null, 2));
       } catch (error) {
+        console.log(error);
         Alert.alert('Erro', 'Não foi possível gerar o JSON.');
       } finally {
         setLoading(false);
