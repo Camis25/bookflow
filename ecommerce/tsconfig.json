@@ -1,19 +1,4 @@
 {
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true,
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "app/_layout.jsx",
-    "app/index.jsx",
-    "app/Login.jsx",
-    "app/modal.jsx"
-  ]
+  "compilerOptions": {},
+  "extends": "expo/tsconfig.base"
 }
