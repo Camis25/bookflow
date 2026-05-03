@@ -186,7 +186,7 @@ export default function AdminProductListScreen({ navigation }) {
     try {
       setLoading(true);
       const data = await getAllLivros();
-      console.log("LIVROS:", data); // debug
+      console.log("LIVROS:", data); 
       setLivros(data);
     } catch (error) {
       console.log(error);

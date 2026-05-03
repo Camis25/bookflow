@@ -44,7 +44,11 @@ export const initDatabase = async () => {
         email_usuario TEXT UNIQUE,
         senha_usuario TEXT,
         tipo_usuario TEXT,
-        data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP
+        data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP,
+        cpf TEXT,
+        data_nascimento DATETIME,
+        cidadeNasc TEXT,
+        ultimaEscola TEXT
       );
 
       CREATE TABLE IF NOT EXISTS tb_categoria (
@@ -108,7 +112,17 @@ export const createAdmin = async () => {
 // ─────────────────────────────────────────────
 export const getAllLivros = async () => {
   try {
-    return await db.getAllAsync(`SELECT * FROM tb_livro`);
+    return await db.getAllAsync(`
+      SELECT 
+        l.id_livro,
+        l.titulo_livro,
+        l.preco,
+        l.capa_livro,
+        c.nome_categoria as categoria
+      FROM tb_livro l
+      LEFT JOIN tb_categoria c 
+        ON l.id_categoria = c.id_categoria
+    `);
   } catch (error) {
     console.error(error);
     return [];
@@ -182,6 +196,19 @@ export const deleteUsuario = async (id) => {
     return result;
   } catch (error) {
     console.error("Erro ao deletar usuário:", error);
+    throw error;
+  }
+};
+
+export const createUsuario = async (nome, cpf, dataNascimento, email, senha, cidadeNasc, ultimaEscola) => {
+  try {
+    await db.runAsync(
+      `INSERT INTO tb_usuario (nome_usuario, cpf, data_nascimento, email_usuario, senha_usuario, tipo_usuario, cidadeNasc, ultimaEscola) VALUES (?, ?, ?, ?, ?, 'user', ?, ?)`,
+      [nome, cpf, dataNascimento, email, senha, cidadeNasc, ultimaEscola]
+    );
+    console.log('Usuário criado:', { senha, email });
+  } catch (error) {
+    console.error("Erro ao criar usuário:", error);
     throw error;
   }
 };

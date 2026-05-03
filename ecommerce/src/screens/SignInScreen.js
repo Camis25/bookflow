@@ -17,6 +17,8 @@ export default function SignInScreen({ navigation }) {
   const [dataNascimento, setDataNascimento] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [cidadeNasc, setCidadeNasc] = useState("");
+  const [ultimaEscola, setUltimaEscola] = useState("");
 
   const handleCadastro = async () => {
     try {
@@ -25,7 +27,7 @@ export default function SignInScreen({ navigation }) {
         return;
       }
 
-      await createUsuario(nome, email, cpf, dataNascimento);
+      await createUsuario(nome, cpf, dataNascimento, email, senha, cidadeNasc, ultimaEscola);
 
       Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
       navigation.navigate("UserList");
@@ -67,6 +69,12 @@ export default function SignInScreen({ navigation }) {
           onChangeText={setSenha}
           secureTextEntry
         />
+
+        <Text style={styles.label}>Cidade de Nascimento</Text>
+        <TextInput style={styles.input} value={cidadeNasc} onChangeText={setCidadeNasc} />
+
+        <Text style={styles.label}>Última Escola que Frequentou</Text>
+        <TextInput style={styles.input} value={ultimaEscola} onChangeText={setUltimaEscola} />
 
         <TouchableOpacity style={styles.button} onPress={handleCadastro}>
           <Text style={styles.buttonText}>Cadastrar-se</Text>

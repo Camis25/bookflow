@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { initDatabase, createAdmin } from "../services/database";
+import * as NavigationBar from 'expo-navigation-bar';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useEffect } from 'react';
@@ -13,6 +14,19 @@ export default function RootLayout() {
     initDatabase();
     createAdmin();
   }, []);
+  
+    useEffect(() => {
+    const hideNavBar = async () => {
+      // No Android, isso oculta a barra de botões do sistema
+      await NavigationBar.setVisibilityAsync("hidden");
+      
+      // 'overlay-swipe' permite que a barra apareça sobre o app ao deslizar
+      await NavigationBar.setBehaviorAsync("overlay-swipe");
+    };
+
+    hideNavBar();
+  }, []);
+
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

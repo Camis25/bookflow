@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  ScrollView,
-  FlatList,
   ActivityIndicator,
   View,
   ImageBackground,
@@ -71,7 +69,6 @@ const BannerImage = styled(ImageBackground)`
   justify-content: center;
 `;
 
-// Categorias e Livros
 const SectionTitle = styled.Text`
   font-size: 14px;
   font-weight: 700;
@@ -109,25 +106,7 @@ const FallbackTitle = styled.Text`
   color: ${theme.colors.text};
 `;
 
-// Mock
-const MOCK_BOOKS = [
-  { id: 1, titulo: "A Hipótese do Amor", categoria: "Romance", preco: 49.9 },
-  { id: 2, titulo: "Jane Eyre", categoria: "Romance", preco: 34.9 },
-  { id: 3, titulo: "Nós Já Moramos Aqui", categoria: "Suspense", preco: 45.0 },
-  {
-    id: 4,
-    titulo: "A Paciente Silenciosa",
-    categoria: "Suspense",
-    preco: 55.0,
-  },
-  { id: 5, titulo: "O Poder do Hábito", categoria: "Autoajuda", preco: 39.9 },
-  {
-    id: 6,
-    titulo: "Um Livro de Auto-ajuda",
-    categoria: "Autoajuda",
-    preco: 29.9,
-  },
-];
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function StoreHomeScreen({ navigation }) {
   const [allBooks, setAllBooks] = useState([]);
@@ -136,10 +115,14 @@ export default function StoreHomeScreen({ navigation }) {
   const load = useCallback(async () => {
     try {
       setLoading(true);
+
       const books = await getAllLivros();
-      setAllBooks(books.length > 0 ? books : MOCK_BOOKS);
-    } catch {
-      setAllBooks(MOCK_BOOKS);
+      console.log("LIVROS DO BANCO:", books);
+
+      setAllBooks(books);
+    } catch (error) {
+      console.error("Erro ao carregar livros:", error);
+      setAllBooks([]);
     } finally {
       setLoading(false);
     }
@@ -151,12 +134,14 @@ export default function StoreHomeScreen({ navigation }) {
 
   const getBooksByCategory = (catName) => {
     return allBooks.filter(
-      (b) => b.categoria?.toLowerCase() === catName.toLowerCase(),
+      (b) =>
+        b.categoria?.toLowerCase().trim() ===
+        catName.toLowerCase().trim()
     );
   };
 
   const renderBookGroup = (title, data) => {
-    if (data.length === 0) return null;
+    if (!data || data.length === 0) return null;
 
     return (
       <View>
@@ -166,16 +151,16 @@ export default function StoreHomeScreen({ navigation }) {
           horizontal
           showsHorizontalScrollIndicator={false}
           data={data}
-          keyExtractor={(item) => String(item.id)}
+          keyExtractor={(item) => String(item.id_livro)}
           contentContainerStyle={{ paddingRight: 16 }}
           renderItem={({ item }) => (
             <BookCoverButton
               onPress={() =>
-                navigation.navigate("BookDetails", {
+                navigation.navigate("BookDetailsScreen", {
                   itens: [
                     {
-                      livro_id: item.id,
-                      titulo: item.titulo,
+                      livro_id: item.id_livro,
+                      titulo: item.titulo_livro,
                       quantidade: 1,
                       preco_unitario: item.preco,
                     },
@@ -183,13 +168,13 @@ export default function StoreHomeScreen({ navigation }) {
                 })
               }
             >
-              {item.imagem_url ? (
+              {item.capa_livro ? (
                 <BookCoverImage
-                  source={{ uri: item.imagem_url }}
+                  source={{ uri: item.capa_livro }}
                   resizeMode="cover"
                 />
               ) : (
-                <FallbackTitle>{item.titulo}</FallbackTitle>
+                <FallbackTitle>{item.titulo_livro}</FallbackTitle>
               )}
             </BookCoverButton>
           )}
@@ -207,7 +192,7 @@ export default function StoreHomeScreen({ navigation }) {
         </HamburgerBtn>
 
         <HeaderRightGroup>
-          <HeaderIconBtn onPress={() => navigation.navigate("Search")}>
+          <HeaderIconBtn onPress={() => navigation.navigate("SearchScreen")}>
             <Ionicons
               name="search-outline"
               size={20}
@@ -215,7 +200,7 @@ export default function StoreHomeScreen({ navigation }) {
             />
           </HeaderIconBtn>
 
-          <HeaderIconBtn onPress={() => navigation.navigate("Cart")}>
+          <HeaderIconBtn onPress={() => navigation.navigate("CartScreen")}>
             <Ionicons
               name="bag-handle-outline"
               size={20}
@@ -229,7 +214,6 @@ export default function StoreHomeScreen({ navigation }) {
       <Content showsVerticalScrollIndicator={false}>
         <Greeting>Olá, Usuário!</Greeting>
 
-        {/* BANNERS COM IMAGEM */}
         <BannerScroll
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -238,17 +222,14 @@ export default function StoreHomeScreen({ navigation }) {
           <BannerImage
             source={require("../../assets/images/NaoFiccao.jpg")}
             imageStyle={{ borderRadius: 12 }}
-            resizeMode="cover"
           />
 
           <BannerImage
             source={require("../../assets/images/Terror.jpg")}
             imageStyle={{ borderRadius: 12 }}
-            resizeMode="cover"
           />
         </BannerScroll>
 
-        {/* LISTAS */}
         {loading ? (
           <ActivityIndicator
             size="large"
@@ -264,7 +245,6 @@ export default function StoreHomeScreen({ navigation }) {
         )}
       </Content>
 
-      {/* NAVBAR */}
       <BottomNavBar active="home" navigation={navigation} />
     </Screen>
   );
