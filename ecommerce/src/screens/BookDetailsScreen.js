@@ -6,79 +6,254 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
+
 import BottomNavBar from "../components/BottomNavBar";
 
-export default function BookDetailsScreen({ navigation }) {
+import { addToCarrinho } from "../services/database";
+
+export default function BookDetailsScreen({
+  navigation,
+  route,
+}) {
+
+  const { livro } = route.params;
+
+  // ─────────────────────────────────────────────
+  // 🛒 ADICIONAR AO CARRINHO
+  // ─────────────────────────────────────────────
+  const handleAddToCart = async () => {
+
+    try {
+
+      // ⚠️ depois pegar do usuário logado
+      const usuarioId = 1;
+
+      await addToCarrinho(
+        usuarioId,
+        livro.id_livro,
+        1
+      );
+
+      Alert.alert(
+        "Carrinho",
+        `${livro.titulo_livro} foi adicionado ao carrinho`
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      Alert.alert(
+        "Erro",
+        "Não foi possível adicionar ao carrinho"
+      );
+    }
+  };
+
+  // ─────────────────────────────────────────────
+  // 💳 COMPRAR AGORA
+  // ─────────────────────────────────────────────
+  const handleBuyNow = async () => {
+
+    try {
+
+      // ⚠️ depois pegar do usuário logado
+      const usuarioId = 1;
+
+      await addToCarrinho(
+        usuarioId,
+        livro.id_livro,
+        1
+      );
+
+      navigation.navigate("CartScreen");
+
+    } catch (error) {
+
+      console.error(error);
+
+      Alert.alert(
+        "Erro",
+        "Não foi possível continuar"
+      );
+    }
+  };
+
   return (
     <View style={styles.container}>
+
       <ScrollView showsVerticalScrollIndicator={false}>
+
+        {/* HEADER */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={26} color="#fff" />
+
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons
+              name="arrow-back"
+              size={26}
+              color="#fff"
+            />
           </TouchableOpacity>
+
         </View>
 
-        {/* IMAGEM SOBREPOSTA */}
+        {/* IMAGEM */}
         <View style={styles.imageWrapper}>
-          <Image
-            source={require("../../assets/images/AHipotese.jpg")}
-            style={styles.image}
-          />
+
+          {livro.capa_livro ? (
+
+            <Image
+              source={{
+                uri: livro.capa_livro,
+              }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+
+          ) : (
+
+            <View style={styles.imageFallback}>
+
+              <Text style={styles.imageFallbackText}>
+                Sem imagem
+              </Text>
+
+            </View>
+          )}
+
         </View>
 
         {/* CARD */}
         <View style={styles.card}>
-          <Text style={styles.title}>A Hipótese do Amor</Text>
+
+          {/* CATEGORIA */}
+          <Text style={styles.category}>
+            {livro.categoria}
+          </Text>
+
+          {/* TÍTULO */}
+          <Text style={styles.title}>
+            {livro.titulo_livro}
+          </Text>
 
           {/* AVALIAÇÃO */}
-          <Text style={styles.rating}>★★★★★</Text>
+          <Text style={styles.rating}>
+            ★★★★★
+          </Text>
 
-          {/* PREÇO + ÍCONES */}
+          {/* PREÇO */}
           <View style={styles.priceRow}>
-            <Text style={styles.price}>R$ 43,81</Text>
+
+            <Text style={styles.price}>
+              R$ {Number(livro.preco).toFixed(2)}
+            </Text>
 
             <View style={styles.icons}>
-              <Ionicons name="bag-outline" size={22} />
-              <Ionicons name="heart-outline" size={22} />
+
+              {/* FAVORITO */}
+              <TouchableOpacity>
+                <Ionicons
+                  name="heart-outline"
+                  size={24}
+                  color="#333"
+                />
+              </TouchableOpacity>
+
+              {/* CARRINHO */}
+              <TouchableOpacity
+                onPress={handleAddToCart}
+              >
+                <Ionicons
+                  name="bag-outline"
+                  size={24}
+                  color="#333"
+                />
+              </TouchableOpacity>
+
             </View>
+
           </View>
 
+          {/* ENTREGA */}
           <Text style={styles.delivery}>
-            Entrega GRÁTIS: sexta-feira, 6 de março
+            Entrega GRÁTIS para sua região
           </Text>
 
           {/* DESCRIÇÃO */}
-          <Text style={styles.description}>
-            Quando um namoro de mentira entre cientistas encontra a irresistível
-            força da atração, todas as teorias cuidadosamente calculadas sobre o
-            amor são postas à prova.
+          <Text style={styles.sectionTitle}>
+            Descrição
           </Text>
 
-          {/* BOTÕES */}
+          <Text style={styles.description}>
+            {
+              livro.descricao ||
+              "Sem descrição disponível."
+            }
+          </Text>
+
+          {/* INFO EXTRA */}
+          <View style={styles.infoBox}>
+
+            <Text style={styles.infoText}>
+              ID do livro: {livro.id_livro}
+            </Text>
+
+            <Text style={styles.infoText}>
+              Categoria: {livro.categoria}
+            </Text>
+
+            <Text style={styles.infoText}>
+              Estoque: {livro.estoque}
+            </Text>
+
+          </View>
+
+          {/* BOTÃO ADICIONAR */}
           <TouchableOpacity
             style={styles.outlineButton}
-            onPress={() => navigation.navigate("Cart")}
+            onPress={handleAddToCart}
           >
-            <Text style={styles.outlineText}>Adicionar ao carrinho</Text>
+
+            <Text style={styles.outlineText}>
+              Adicionar ao carrinho
+            </Text>
+
           </TouchableOpacity>
 
+          {/* BOTÃO COMPRAR */}
           <TouchableOpacity
             style={styles.primaryButton}
-            onPress={() => navigation.navigate("Cart")}
+            onPress={handleBuyNow}
           >
-            <Text style={styles.primaryText}>Comprar agora</Text>
+
+            <Text style={styles.primaryText}>
+              Comprar agora
+            </Text>
+
           </TouchableOpacity>
+
         </View>
+
       </ScrollView>
 
-      {/* NAVBAR FIXA */}
-      <BottomNavBar navigation={navigation} />
+      {/* NAVBAR */}
+      <BottomNavBar
+        active="home"
+        navigation={navigation}
+      />
+
     </View>
   );
 }
+
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: "#fff",
@@ -93,13 +268,29 @@ const styles = StyleSheet.create({
 
   imageWrapper: {
     alignItems: "center",
-    marginTop: -60, // 🔥 faz a imagem "flutuar"
+    marginTop: -60,
+    zIndex: 10,
   },
 
   image: {
-    width: 160,
-    height: 230,
-    borderRadius: 10,
+    width: 170,
+    height: 250,
+    borderRadius: 12,
+    backgroundColor: "#eee",
+  },
+
+  imageFallback: {
+    width: 170,
+    height: 250,
+    borderRadius: 12,
+    backgroundColor: "#ddd",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  imageFallbackText: {
+    color: "#666",
+    fontSize: 16,
   },
 
   card: {
@@ -107,75 +298,111 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    padding: 20,
+    padding: 24,
+  },
+
+  category: {
+    textAlign: "center",
+    color: "#7FA6B6",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
   },
 
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
+    color: "#222",
   },
 
   rating: {
     textAlign: "center",
     color: "#f5a623",
-    marginVertical: 5,
+    marginTop: 8,
+    fontSize: 18,
   },
 
   priceRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 20,
   },
 
   price: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: "bold",
+    color: "#111",
   },
 
   icons: {
     flexDirection: "row",
-    gap: 10,
+    gap: 16,
   },
 
   delivery: {
-    fontSize: 12,
+    marginTop: 10,
     color: "#666",
-    marginTop: 5,
+    fontSize: 13,
+  },
+
+  sectionTitle: {
+    marginTop: 24,
+    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#222",
   },
 
   description: {
-    marginTop: 15,
-    fontSize: 14,
+    fontSize: 15,
+    lineHeight: 24,
     color: "#444",
-    textAlign: "center",
+    textAlign: "justify",
+  },
+
+  infoBox: {
+    marginTop: 20,
+    backgroundColor: "#f5f5f5",
+    padding: 15,
+    borderRadius: 12,
+  },
+
+  infoText: {
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 6,
   },
 
   outlineButton: {
-    marginTop: 20,
+    marginTop: 28,
     borderWidth: 2,
     borderColor: "#7FA6B6",
     borderRadius: 50,
-    padding: 15,
+    paddingVertical: 16,
     alignItems: "center",
   },
 
   outlineText: {
     color: "#7FA6B6",
-    fontWeight: "600",
+    fontWeight: "700",
+    fontSize: 16,
   },
 
   primaryButton: {
-    marginTop: 10,
+    marginTop: 14,
     backgroundColor: "#7FA6B6",
     borderRadius: 50,
-    padding: 15,
+    paddingVertical: 16,
     alignItems: "center",
+    marginBottom: 40,
   },
 
   primaryText: {
     color: "#fff",
-    fontWeight: "600",
+    fontWeight: "700",
+    fontSize: 16,
   },
+
 });

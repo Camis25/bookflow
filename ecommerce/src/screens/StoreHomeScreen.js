@@ -157,14 +157,7 @@ export default function StoreHomeScreen({ navigation }) {
             <BookCoverButton
               onPress={() =>
                 navigation.navigate("BookDetailsScreen", {
-                  itens: [
-                    {
-                      livro_id: item.id_livro,
-                      titulo: item.titulo_livro,
-                      quantidade: 1,
-                      preco_unitario: item.preco,
-                    },
-                  ],
+                  livro: item,
                 })
               }
             >
@@ -240,6 +233,7 @@ export default function StoreHomeScreen({ navigation }) {
           <View>
             {renderBookGroup("Romance", getBooksByCategory("Romance"))}
             {renderBookGroup("Suspense", getBooksByCategory("Suspense"))}
+            {renderBookGroup("Terror", getBooksByCategory("Terror"))}
             {renderBookGroup("Autoajuda", getBooksByCategory("Autoajuda"))}
           </View>
         )}

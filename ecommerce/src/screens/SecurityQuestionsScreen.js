@@ -35,7 +35,7 @@ export default function SecurityQuestionsScreen({ navigation }) {
         {/* Botão */}
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate("Home")}
+          onPress={() => navigation.navigate("StoreHome")}
         >
           <Text style={styles.buttonText}>Cadastre-se</Text>
         </TouchableOpacity>

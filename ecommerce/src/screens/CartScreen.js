@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,84 +7,140 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function CartScreen({ navigation }) {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: "1",
-      titulo: "A hipótese do amor",
-      preco: 43.81,
-      quantidade: 1,
-      selecionado: true,
-      imagem: require("../../assets/images/AHipotese.jpg"),
-    },
-    {
-      id: "2",
-      titulo: "Nós já moramos aqui",
-      preco: 64.8,
-      quantidade: 1,
-      selecionado: true,
-      imagem: require("../../assets/images/images (2).jpg"),
-    },
-  ]);
+import BottomNavBar from "../components/BottomNavBar";
 
-  const recomendados = [
-    { id: "1", imagem: require("../../assets/images/AHipotese.jpg") },
-    { id: "2", imagem: require("../../assets/images/images (2).jpg") },
-    { id: "3", imagem: require("../../assets/images/AHipotese.jpg") },
-  ];
+import {
+  getCarrinhoByUsuario,
+  updateQuantidadeCarrinho,
+  removeItemCarrinho,
+} from "../services/database";
 
-  // ✅ TOTAL DINÂMICO
-  const total = cartItems
-    .filter((item) => item.selecionado)
-    .reduce((acc, item) => acc + item.preco * item.quantidade, 0)
-    .toFixed(2);
+export default function CartScreen({ navigation, route }) {
+  // ⚠️ depois pegar do usuário logado
+  const usuarioId = 1;
 
-  // ✅ ALTERAR QUANTIDADE
-  const alterarQuantidade = (id, tipo) => {
-    setCartItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          if (tipo === "mais") {
-            return { ...item, quantidade: item.quantidade + 1 };
-          } else {
-            return {
-              ...item,
-              quantidade: item.quantidade > 1 ? item.quantidade - 1 : 1,
-            };
-          }
-        }
-        return item;
-      }),
-    );
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ─────────────────────────────────────────────
+  // 📦 CARREGAR CARRINHO
+  // ─────────────────────────────────────────────
+  const loadCarrinho = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const data = await getCarrinhoByUsuario(usuarioId);
+
+      setCartItems(
+        data.map((item) => ({
+          ...item,
+          selecionado: true,
+        }))
+      );
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCarrinho();
+  }, [loadCarrinho]);
+
+  // ─────────────────────────────────────────────
+  // ➕➖ QUANTIDADE
+  // ─────────────────────────────────────────────
+  const alterarQuantidade = async (idItemCarrinho, tipo) => {
+    try {
+      const item = cartItems.find(
+        (i) => i.id_item_carrinho === idItemCarrinho
+      );
+
+      if (!item) return;
+
+      let novaQuantidade =
+        tipo === "mais"
+          ? item.quantidade + 1
+          : item.quantidade - 1;
+
+      if (novaQuantidade < 1) {
+        await removeItemCarrinho(idItemCarrinho);
+      } else {
+        await updateQuantidadeCarrinho(
+          idItemCarrinho,
+          novaQuantidade
+        );
+      }
+
+      loadCarrinho();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  // ✅ CHECKBOX INDIVIDUAL
+  // ─────────────────────────────────────────────
+  // ☑️ CHECKBOX ITEM
+  // ─────────────────────────────────────────────
   const toggleItem = (id) => {
     setCartItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, selecionado: !item.selecionado } : item,
-      ),
+        item.id_item_carrinho === id
+          ? {
+              ...item,
+              selecionado: !item.selecionado,
+            }
+          : item
+      )
     );
   };
 
-  // ✅ CHECKBOX GLOBAL
-  const todosSelecionados = cartItems.every((item) => item.selecionado);
+  // ─────────────────────────────────────────────
+  // ☑️ CHECKBOX GLOBAL
+  // ─────────────────────────────────────────────
+  const todosSelecionados = cartItems.every(
+    (item) => item.selecionado
+  );
 
   const toggleSelecionarTodos = () => {
     setCartItems((prev) =>
       prev.map((item) => ({
         ...item,
         selecionado: !todosSelecionados,
-      })),
+      }))
     );
   };
 
+  // ─────────────────────────────────────────────
+  // 💰 TOTAL
+  // ─────────────────────────────────────────────
+  const total = cartItems
+    .filter((item) => item.selecionado)
+    .reduce(
+      (acc, item) =>
+        acc + item.preco_unitario * item.quantidade,
+      0
+    )
+    .toFixed(2);
+
+  // ─────────────────────────────────────────────
+  // 🧾 ITENS SELECIONADOS
+  // ─────────────────────────────────────────────
+  const itensSelecionados = cartItems.filter(
+    (item) => item.selecionado
+  );
+
   return (
-    <SafeAreaView style={styles.container} edges={["left", "right", "bottom"]}>
+    <SafeAreaView
+      style={styles.container}
+      edges={["left", "right", "bottom"]}
+    >
       {/* HEADER */}
       <View style={styles.header}>
         <Ionicons
@@ -93,107 +149,197 @@ export default function CartScreen({ navigation }) {
           color="#fff"
           onPress={() => navigation.goBack()}
         />
-        <Text style={styles.headerTitle}>Carrinho</Text>
+
+        <Text style={styles.headerTitle}>
+          Carrinho
+        </Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        {/* SUBTOTAL */}
-        <View style={styles.subtotalContainer}>
-          <Text style={styles.subtotalText}>Subtotal:</Text>
-          <Text style={styles.subtotalValue}>R$ {total}</Text>
-        </View>
+      {/* LOADING */}
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#7FA6B6"
+          style={{ marginTop: 40 }}
+        />
+      ) : (
+        <>
+          <ScrollView
+            contentContainerStyle={{
+              paddingBottom: 140,
+            }}
+          >
+            {/* SUBTOTAL */}
+            <View style={styles.subtotalContainer}>
+              <Text style={styles.subtotalText}>
+                Subtotal:
+              </Text>
 
-        {/* LISTA DE PRODUTOS */}
-        {cartItems.map((produto) => (
-          <View key={produto.id} style={styles.card}>
-            {/* CHECKBOX */}
-            <TouchableOpacity onPress={() => toggleItem(produto.id)}>
-              <Ionicons
-                name={produto.selecionado ? "checkbox" : "square-outline"}
-                size={22}
-                color="#7FA6B6"
-              />
-            </TouchableOpacity>
+              <Text style={styles.subtotalValue}>
+                R$ {total}
+              </Text>
+            </View>
 
-            <Image source={produto.imagem} style={styles.bookImage} />
+            {/* CARRINHO VAZIO */}
+            {cartItems.length === 0 && (
+              <View style={styles.emptyContainer}>
+                <Ionicons
+                  name="cart-outline"
+                  size={90}
+                  color="#ccc"
+                />
 
-            <View style={styles.info}>
-              <Text style={styles.bookTitle}>{produto.titulo}</Text>
-
-              <View style={styles.row}>
-                <View style={styles.quantityBox}>
-                  <TouchableOpacity
-                    onPress={() => alterarQuantidade(produto.id, "menos")}
-                  >
-                    <Text style={styles.qtyButton}>-</Text>
-                  </TouchableOpacity>
-
-                  <Text style={styles.qtyText}>{produto.quantidade}</Text>
-
-                  <TouchableOpacity
-                    onPress={() => alterarQuantidade(produto.id, "mais")}
-                  >
-                    <Text style={styles.qtyButton}>+</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <Text style={styles.price}>
-                  R$ {(produto.preco * produto.quantidade).toFixed(2)}
+                <Text style={styles.emptyText}>
+                  Seu carrinho está vazio
                 </Text>
               </View>
+            )}
+
+            {/* LISTA */}
+            {cartItems.map((produto) => (
+              <View
+                key={produto.id_item_carrinho}
+                style={styles.card}
+              >
+                {/* CHECK */}
+                <TouchableOpacity
+                  onPress={() =>
+                    toggleItem(
+                      produto.id_item_carrinho
+                    )
+                  }
+                >
+                  <Ionicons
+                    name={
+                      produto.selecionado
+                        ? "checkbox"
+                        : "square-outline"
+                    }
+                    size={24}
+                    color="#7FA6B6"
+                  />
+                </TouchableOpacity>
+
+                {/* CAPA */}
+                <Image
+                  source={{
+                    uri: produto.capa_livro,
+                  }}
+                  style={styles.bookImage}
+                />
+
+                {/* INFO */}
+                <View style={styles.info}>
+                  <Text style={styles.bookTitle}>
+                    {produto.titulo_livro}
+                  </Text>
+
+                  <Text style={styles.autor}>
+                    {produto.autor_livro}
+                  </Text>
+
+                  <View style={styles.row}>
+                    {/* QUANTIDADE */}
+                    <View style={styles.quantityBox}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          alterarQuantidade(
+                            produto.id_item_carrinho,
+                            "menos"
+                          )
+                        }
+                      >
+                        <Text style={styles.qtyButton}>
+                          -
+                        </Text>
+                      </TouchableOpacity>
+
+                      <Text style={styles.qtyText}>
+                        {produto.quantidade}
+                      </Text>
+
+                      <TouchableOpacity
+                        onPress={() =>
+                          alterarQuantidade(
+                            produto.id_item_carrinho,
+                            "mais"
+                          )
+                        }
+                      >
+                        <Text style={styles.qtyButton}>
+                          +
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* PREÇO */}
+                    <Text style={styles.price}>
+                      R${" "}
+                      {(
+                        produto.preco_unitario *
+                        produto.quantidade
+                      ).toFixed(2)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+
+          {/* FOOTER */}
+          {cartItems.length > 0 && (
+            <View style={styles.footer}>
+              {/* SELECIONAR TODOS */}
+              <TouchableOpacity
+                style={styles.selectAll}
+                onPress={toggleSelecionarTodos}
+              >
+                <Ionicons
+                  name={
+                    todosSelecionados
+                      ? "checkbox"
+                      : "square-outline"
+                  }
+                  size={22}
+                  color="#7FA6B6"
+                />
+
+                <Text style={{ fontSize: 16 }}>
+                  Tudo
+                </Text>
+              </TouchableOpacity>
+
+              {/* TOTAL */}
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={styles.total}>
+                  R$ {total}
+                </Text>
+
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() =>
+                    navigation.navigate(
+                      "CheckoutScreen",
+                      {
+                        itens: itensSelecionados,
+                        total,
+                      }
+                    )
+                  }
+                >
+                  <Text style={styles.buttonText}>
+                    Continuar
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        ))}
-
-        {/* DIVISOR */}
-        <View style={styles.dividerContainer}>
-          <View style={styles.line} />
-          <Text style={styles.dividerText}>você também pode gostar</Text>
-          <View style={styles.line} />
-        </View>
-
-        {/* RECOMENDADOS */}
-        <FlatList
-          data={recomendados}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <Image source={item.imagem} style={styles.recommendImage} />
           )}
-          keyExtractor={(item) => item.id}
-          style={{ marginVertical: 20 }}
-        />
-      </ScrollView>
+        </>
+      )}
 
-      {/* FOOTER FIXO */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.selectAll}
-          onPress={toggleSelecionarTodos}
-        >
-          <Ionicons
-            name={todosSelecionados ? "checkbox" : "square-outline"}
-            size={22}
-            color="#7FA6B6"
-          />
-          <Text style={{ fontSize: 16 }}>Tudo</Text>
-        </TouchableOpacity>
-
-        <View style={{ alignItems: "flex-end" }}>
-          <Text style={styles.total}>R$ {total}</Text>
-
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() =>
-              navigation.navigate("Checkout", {
-                total: total, // ✅ agora sim
-              })
-            }
-          >
-            <Text style={styles.buttonText}>Continuar</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <BottomNavBar
+        navigation={navigation}
+      />
     </SafeAreaView>
   );
 }
@@ -252,17 +398,23 @@ const styles = StyleSheet.create({
     width: 90,
     height: 130,
     borderRadius: 10,
+    backgroundColor: "#ddd",
   },
 
   info: {
     flex: 1,
-    marginLeft: 10,
     justifyContent: "space-between",
   },
 
   bookTitle: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  autor: {
+    color: "#666",
+    marginTop: 4,
+    marginBottom: 10,
   },
 
   row: {
@@ -282,7 +434,7 @@ const styles = StyleSheet.create({
   },
 
   qtyButton: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#7FA6B6",
   },
@@ -293,45 +445,23 @@ const styles = StyleSheet.create({
 
   price: {
     fontSize: 16,
-    fontWeight: "600",
-  },
-
-  dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 20,
-    marginTop: 20,
-  },
-
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#ccc",
-  },
-
-  dividerText: {
-    marginHorizontal: 10,
-    fontSize: 12,
-    color: "#777",
-  },
-
-  recommendImage: {
-    width: 100,
-    height: 150,
-    borderRadius: 10,
-    marginLeft: 15,
+    fontWeight: "700",
   },
 
   footer: {
     position: "absolute",
-    bottom: 0,
+    bottom: 70,
     left: 0,
     right: 0,
+
     backgroundColor: "#fff",
+
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+
     padding: 20,
+
     borderTopWidth: 1,
     borderColor: "#eee",
   },
@@ -343,20 +473,31 @@ const styles = StyleSheet.create({
   },
 
   total: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 5,
+    marginBottom: 8,
   },
 
   button: {
     backgroundColor: "#7FA6B6",
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 6,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 10,
   },
 
   buttonText: {
     color: "#fff",
-    fontWeight: "600",
+    fontWeight: "700",
+  },
+
+  emptyContainer: {
+    alignItems: "center",
+    marginTop: 80,
+  },
+
+  emptyText: {
+    marginTop: 16,
+    fontSize: 18,
+    color: "#999",
   },
 });

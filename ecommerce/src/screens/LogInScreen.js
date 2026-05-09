@@ -33,7 +33,7 @@ export default function LogInScreen() {
     if (user.tipo_usuario === "admin") {
       navigation.replace("AdminDashboard"); 
     } else {
-      navigation.replace("Home"); 
+      navigation.replace("StoreHome"); 
     }
   };
 

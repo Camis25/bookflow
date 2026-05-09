@@ -71,7 +71,7 @@ export default function ProfileScreen({ navigation }) {
   const handleLogout = () => {
     Alert.alert('Sair', 'Deseja realmente sair?', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Sair', style: 'destructive', onPress: () => navigation.replace('Home') },
+      { text: 'Sair', style: 'destructive', onPress: () => navigation.replace('StoreHome') },
     ]);
   };
 

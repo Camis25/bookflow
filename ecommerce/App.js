@@ -54,13 +54,13 @@ export default function App() {
           <Stack.Screen name="SignIn" component={SignInScreen} />
           <Stack.Screen name="SecurityQuestions" component={SecurityQuestionsScreen}/>
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen}/>
-          <Stack.Screen name="BookDetails" component={BookDetailsScreen} />
-          <Stack.Screen name="Checkout" component={CheckoutScreen} />
+          <Stack.Screen name="BookDetailsScreen" component={BookDetailsScreen} />
+          <Stack.Screen name="CheckoutScreen" component={CheckoutScreen} />
           <Stack.Screen name="MyLibrary" component={MyLibraryScreen} />
-          <Stack.Screen name="Cart" component={CartScreen} />
+          <Stack.Screen name="CartScreen" component={CartScreen} />
 
-          <Stack.Screen name="Home" component={StoreHomeScreen} />
-          <Stack.Screen name="Search" component={SearchScreen} />
+          <Stack.Screen name="StoreHome" component={StoreHomeScreen} />
+          <Stack.Screen name="SearchScreen" component={SearchScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="EditProfile" component={EditProfileScreen} />
           <Stack.Screen name="MyOrders" component={MyOrdersScreen} />
