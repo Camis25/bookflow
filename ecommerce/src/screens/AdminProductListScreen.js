@@ -3,10 +3,12 @@ import { FlatList, Alert, View, Dimensions, Modal } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
+import AdminBottomNavBar from '../components/AdminBottomNavBar';
 import { getAllLivros, deleteLivro } from '../services/database';
 
 const { width } = Dimensions.get('window');
-const cardWidth = (width - 48 - 32) / 3;
+// Calcula para 2 colunas, descontando paddings
+const cardWidth = (width - 48 - 16) / 2; 
 
 // ─── Styled Components ────────────────────────────────────────────────────────
 
@@ -70,6 +72,7 @@ const NovoBtnText = styled.Text`
   font-weight: bold;
 `;
 
+// Card de Produto
 const ProductCard = styled.View`
   width: ${cardWidth}px;
   background-color: ${theme.colors.inputBg};
@@ -124,6 +127,7 @@ const Loader = styled.ActivityIndicator`
   margin-top: 40px;
 `;
 
+// Modal de Exclusão
 const Overlay = styled.View`
   flex: 1;
   background-color: rgba(0, 0, 0, 0.4);
@@ -137,6 +141,10 @@ const ModalBox = styled.View`
   border-radius: 12px;
   padding: 32px 24px;
   align-items: center;
+  elevation: 5;
+  shadow-color: #000;
+  shadow-opacity: 0.2;
+  shadow-radius: 8px;
 `;
 
 const ModalTitle = styled.Text`
@@ -173,12 +181,12 @@ const ModalBtnText = styled.Text`
   font-size: 14px;
 `;
 
-// ─── SCREEN ───────────────────────────────────────────────────────────────────
 
 export default function AdminProductListScreen({ navigation }) {
   const [livros, setLivros] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Modal logic
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLivro, setSelectedLivro] = useState(null);
 
@@ -186,17 +194,18 @@ export default function AdminProductListScreen({ navigation }) {
     try {
       setLoading(true);
       const data = await getAllLivros();
-      console.log("LIVROS:", data); 
       setLivros(data);
-    } catch (error) {
-      console.log(error);
+    } catch (_) {
+      // Ignora err no DB
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', loadLivros);
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadLivros();
+    });
     return unsubscribe;
   }, [navigation, loadLivros]);
 
@@ -207,43 +216,29 @@ export default function AdminProductListScreen({ navigation }) {
 
   const handleDelete = async () => {
     if (!selectedLivro) return;
-
     try {
-      await deleteLivro(selectedLivro.id_livro);
       setModalVisible(false);
+      await deleteLivro(selectedLivro.id);
       loadLivros();
-    } catch (error) {
-      console.log(error);
+    } catch (_) {
       Alert.alert('Erro', 'Não foi possível excluir o produto.');
     }
   };
 
   const renderItem = ({ item }) => (
     <ProductCard>
-      {item.capa_livro ? (
-        <BookImage source={{ uri: item.capa_livro }} />
+      {item.imagem_url ? (
+        <BookImage source={{ uri: item.imagem_url }} />
       ) : (
-        <BookFallback>
-          <Ionicons name="image-outline" size={24} color="#999" />
-        </BookFallback>
+        <BookFallback><Ionicons name="image-outline" size={24} color="#999" /></BookFallback>
       )}
-
-      <ProductTitle numberOfLines={1}>
-        {item.titulo_livro || 'Sem Título'}
-      </ProductTitle>
-
-      <ProductPrice>
-        R$ {Number(item.preco || 0).toFixed(2).replace('.', ',')}
-      </ProductPrice>
-
+      <ProductTitle numberOfLines={1}>{item.titulo || 'Sem Título'}</ProductTitle>
+      <ProductPrice>R$ {Number(item.preco).toFixed(2).replace('.', ',')}</ProductPrice>
       <ActionsRow>
         <ActionIconBtn onPress={() => confirmDelete(item)}>
           <Ionicons name="trash" size={14} color={theme.colors.textSecondary} />
         </ActionIconBtn>
-
-        <ActionIconBtn
-          onPress={() => navigation.navigate('AdminProductForm', { livro: item })}
-        >
+        <ActionIconBtn onPress={() => navigation.navigate('AdminProductForm', { livro: item })}>
           <Ionicons name="pencil" size={14} color={theme.colors.textSecondary} />
         </ActionIconBtn>
       </ActionsRow>
@@ -254,7 +249,7 @@ export default function AdminProductListScreen({ navigation }) {
     <Screen>
       <HeaderGroup>
         <BackBtn onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
+           <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
         </BackBtn>
         <HeaderTitleText>Produtos</HeaderTitleText>
       </HeaderGroup>
@@ -262,7 +257,6 @@ export default function AdminProductListScreen({ navigation }) {
       <Content>
         <TopRow>
           <MainTitle>Produtos</MainTitle>
-
           <NovoBtn onPress={() => navigation.navigate('AdminProductForm')}>
             <NovoBtnText>Novo</NovoBtnText>
           </NovoBtn>
@@ -273,9 +267,9 @@ export default function AdminProductListScreen({ navigation }) {
         ) : (
           <FlatList
             data={livros}
-            keyExtractor={(item) => String(item.id_livro)}
+            keyExtractor={item => String(item.id)}
             renderItem={renderItem}
-            numColumns={3}
+            numColumns={2}
             columnWrapperStyle={{ justifyContent: 'space-between' }}
             showsVerticalScrollIndicator={false}
           />
@@ -286,13 +280,11 @@ export default function AdminProductListScreen({ navigation }) {
         <Overlay>
           <ModalBox>
             <ModalTitle>Tem certeza?</ModalTitle>
-            <ModalText>Deseja excluir esse produto?</ModalText>
-
+            <ModalText>Tem certeza que deseja excluir esse produto?</ModalText>
             <ModalButtonsRow>
               <ModalBtn primary onPress={handleDelete}>
                 <ModalBtnText>Sim</ModalBtnText>
               </ModalBtn>
-
               <ModalBtn onPress={() => setModalVisible(false)}>
                 <ModalBtnText>Não</ModalBtnText>
               </ModalBtn>
@@ -300,6 +292,7 @@ export default function AdminProductListScreen({ navigation }) {
           </ModalBox>
         </Overlay>
       </Modal>
+      <AdminBottomNavBar active="document" navigation={navigation} />
     </Screen>
   );
 }

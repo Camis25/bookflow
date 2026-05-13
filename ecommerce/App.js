@@ -7,6 +7,9 @@ import { initDatabase, createAdmin } from "./src/services/database";
 import JsonDataScreen from "./src/screens/JsonDataScreen";
 import UserListScreen from "./src/screens/UserListScreen";
 import AdminDashboardScreen from "./src/screens/AdminDashboardScreen";
+import ReviewScreen from "./src/screens/ReviewScreen";
+import CardListScreen from "./src/screens/CardListScreen";
+import CardFormScreen from "./src/screens/CardFormScreen";
 
 // ─── Telas originais (Giulia) ─────────────────────────────────────────────────
 import SignInScreen from "./src/screens/SignInScreen";
@@ -31,6 +34,7 @@ import OrderConfirmationScreen from "./src/screens/OrderConfirmationScreen";
 import AdminProductListScreen from "./src/screens/AdminProductListScreen";
 import AdminProductFormScreen from "./src/screens/AdminProductFormScreen";
 import AdminCategoryListScreen from "./src/screens/AdminCategoryListScreen";
+import AdminOrderListScreen from "./src/screens/AdminOrderListScreen";
 
 const Stack = createStackNavigator();
 
@@ -52,28 +56,55 @@ export default function App() {
         >
           <Stack.Screen name="Login" component={LogInScreen} />
           <Stack.Screen name="SignIn" component={SignInScreen} />
-          <Stack.Screen name="SecurityQuestions" component={SecurityQuestionsScreen}/>
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen}/>
-          <Stack.Screen name="BookDetailsScreen" component={BookDetailsScreen} />
-          <Stack.Screen name="CheckoutScreen" component={CheckoutScreen} />
+          <Stack.Screen
+            name="SecurityQuestions"
+            component={SecurityQuestionsScreen}
+          />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPasswordScreen}
+          />
+          <Stack.Screen name="BookDetails" component={BookDetailsScreen} />
+          <Stack.Screen name="Checkout" component={CheckoutScreen} />
           <Stack.Screen name="MyLibrary" component={MyLibraryScreen} />
-          <Stack.Screen name="CartScreen" component={CartScreen} />
-
-          <Stack.Screen name="StoreHome" component={StoreHomeScreen} />
-          <Stack.Screen name="SearchScreen" component={SearchScreen} />
+          <Stack.Screen name="Cart" component={CartScreen} />
+          <Stack.Screen name="Review" component={ReviewScreen} />
+          <Stack.Screen name="CardList" component={CardListScreen} />
+          <Stack.Screen name="CardForm" component={CardFormScreen} />
+          <Stack.Screen name="Home" component={StoreHomeScreen} />
+          <Stack.Screen name="Search" component={SearchScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="EditProfile" component={EditProfileScreen} />
           <Stack.Screen name="MyOrders" component={MyOrdersScreen} />
           <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
           <Stack.Screen name="AddressList" component={AddressListScreen} />
           <Stack.Screen name="AddressForm" component={AddressFormScreen} />
-          <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen}/>
-          <Stack.Screen name="OrderConfirmation" component={OrderConfirmationScreen}/>
-          <Stack.Screen name="AdminProductList"component={AdminProductListScreen}/>
-          <Stack.Screen name="AdminProductForm"component={AdminProductFormScreen}/>
+          <Stack.Screen
+            name="AdminDashboard"
+            component={AdminDashboardScreen}
+          />
+          <Stack.Screen
+            name="OrderConfirmation"
+            component={OrderConfirmationScreen}
+          />
+          <Stack.Screen
+            name="AdminProductList"
+            component={AdminProductListScreen}
+          />
+          <Stack.Screen
+            name="AdminProductForm"
+            component={AdminProductFormScreen}
+          />
           <Stack.Screen name="JsonData" component={JsonDataScreen} />
           <Stack.Screen name="UserList" component={UserListScreen} />
-          <Stack.Screen name="AdminCategoryList" component={AdminCategoryListScreen}/>
+          <Stack.Screen
+            name="AdminCategoryList"
+            component={AdminCategoryListScreen}
+          />
+          <Stack.Screen
+            name="AdminOrderList"
+            component={AdminOrderListScreen}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

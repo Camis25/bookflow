@@ -1,11 +1,8 @@
-import React from 'react';
-import { Alert, View } from 'react-native';
-import styled from 'styled-components/native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../theme';
-import BottomNavBar from '../components/BottomNavBar';
-
-// ─── Styled Components ────────────────────────────────────────────────────────
+import React from "react";
+import styled from "styled-components/native";
+import { Ionicons } from "@expo/vector-icons";
+import BottomNavBar from "../components/BottomNavBar";
+import { theme } from "../theme";
 
 const Screen = styled.SafeAreaView`
   flex: 1;
@@ -13,15 +10,16 @@ const Screen = styled.SafeAreaView`
 `;
 
 const Header = styled.View`
-  background-color: ${props => props.isAdmin ? theme.colors.primary : theme.colors.secondary};
-  padding: 40px 20px 32px 20px;
+  height: 250px;
+  background-color: ${theme.colors.primary};
   align-items: center;
+  justify-content: center;
 `;
 
 const AvatarContainer = styled.View`
-  width: 90px;
-  height: 90px;
-  border-radius: 45px;
+  width: 76px;
+  height: 76px;
+  border-radius: 38px;
   background-color: ${theme.colors.white};
   justify-content: center;
   align-items: center;
@@ -30,7 +28,7 @@ const AvatarContainer = styled.View`
 
 const UserName = styled.Text`
   color: ${theme.colors.white};
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
 `;
 
@@ -38,95 +36,127 @@ const UserEmail = styled.Text`
   color: ${theme.colors.white};
   font-size: 14px;
   margin-top: 4px;
+  text-decoration-line: underline;
 `;
 
-const MenuList = styled.ScrollView`
+const MenuContainer = styled.ScrollView`
   flex: 1;
 `;
 
 const MenuItem = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
-  padding: 16px 24px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${theme.colors.border};
+  padding: 20px 24px;
+`;
+
+const IconBox = styled.View`
+  width: 28px;
+  align-items: center;
+  margin-right: 12px;
 `;
 
 const MenuText = styled.Text`
-  flex: 1;
-  margin-left: 16px;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   color: ${theme.colors.primary};
 `;
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+const MOCK_USER = {
+  id: 1,
+  nome: "Fulano dos Santos",
+  email: "fulano@snatos.com",
+  isAdmin: false,
+};
 
-// Mock do usuário autenticado (Você pode testar isAdmin = true / false)
-const MOCK_USER = { id: 1, nome: 'Fulano dos Santos', email: 'fulano@santos.com', isAdmin: true };
-
-export default function ProfileScreen({ navigation }) {
-  const user = MOCK_USER;
+export default function ProfileScreen({ route, navigation }) {
+  const isRouteAdmin = route?.params?.isAdmin || false;
+  
+  const user = {
+    ...MOCK_USER,
+    isAdmin: isRouteAdmin
+  };
 
   const handleLogout = () => {
-    Alert.alert('Sair', 'Deseja realmente sair?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Sair', style: 'destructive', onPress: () => navigation.replace('StoreHome') },
-    ]);
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Login" }],
+    });
   };
 
   return (
     <Screen>
-      <Header isAdmin={user.isAdmin}>
+      <Header>
         <AvatarContainer>
-          <Ionicons name="person-outline" size={48} color={user.isAdmin ? theme.colors.primary : theme.colors.secondary} />
+          <Ionicons name="person-outline" size={58} color={theme.colors.primary} />
         </AvatarContainer>
+
         <UserName>{user.nome}</UserName>
         <UserEmail>{user.email}</UserEmail>
       </Header>
 
-      <MenuList showsVerticalScrollIndicator={false}>
-        <MenuItem onPress={() => navigation.navigate('EditProfile', { usuario: user })}>
-          <Ionicons name="person-outline" size={24} color={theme.colors.primary} />
+      <MenuContainer showsVerticalScrollIndicator={false}>
+        <MenuItem onPress={() => navigation.navigate("EditProfile", { usuario: user })}>
+          <IconBox>
+            <Ionicons name="person-outline" size={25} color={theme.colors.primary} />
+          </IconBox>
           <MenuText>Editar dados pessoais</MenuText>
-        </MenuItem>
-
-        <MenuItem onPress={() => navigation.navigate('MyOrders', { usuario_id: user.id })}>
-          <Ionicons name="receipt-outline" size={24} color={theme.colors.primary} />
-          <MenuText>Pedidos</MenuText>
         </MenuItem>
 
         {user.isAdmin ? (
           <>
-            <MenuItem onPress={() => navigation.navigate('AdminProductList')}>
-              <Ionicons name="cube-outline" size={24} color={theme.colors.primary} />
+            <MenuItem onPress={() => navigation.navigate("AdminOrderList")}>
+              <IconBox>
+                <Ionicons name="book-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
+              <MenuText>Pedidos</MenuText>
+            </MenuItem>
+
+            <MenuItem onPress={() => navigation.navigate("AdminProductList")}>
+              <IconBox>
+                <Ionicons name="document-text-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
               <MenuText>Produtos</MenuText>
             </MenuItem>
 
-            <MenuItem onPress={() => navigation.navigate('AdminCategoryList')}>
-              <Ionicons name="list-outline" size={24} color={theme.colors.primary} />
+            <MenuItem onPress={() => navigation.navigate("AdminCategoryList")}>
+              <IconBox>
+                <Ionicons name="pricetags-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
               <MenuText>Categorias</MenuText>
             </MenuItem>
           </>
         ) : (
           <>
-            <MenuItem onPress={() => Alert.alert('Aviso', 'Cartões não implementado.')}>
-              <Ionicons name="card-outline" size={24} color={theme.colors.primary} />
+            <MenuItem onPress={() => navigation.navigate("MyOrders", { usuario_id: user.id })}>
+              <IconBox>
+                <Ionicons name="book-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
+              <MenuText>Pedidos</MenuText>
+            </MenuItem>
+
+            <MenuItem onPress={() => navigation.navigate("CardList")}>
+              <IconBox>
+                <Ionicons name="card-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
               <MenuText>Cartões</MenuText>
             </MenuItem>
 
-            <MenuItem onPress={() => navigation.navigate('AddressList', { usuario_id: user.id })}>
-              <Ionicons name="location-outline" size={24} color={theme.colors.primary} />
+            <MenuItem onPress={() => navigation.navigate("AddressList", { usuario_id: user.id })}>
+              <IconBox>
+                <Ionicons name="map-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
               <MenuText>Endereços</MenuText>
             </MenuItem>
           </>
         )}
 
         <MenuItem onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color={theme.colors.primary} />
+          <IconBox>
+            <Ionicons name="exit-outline" size={25} color={theme.colors.primary} />
+          </IconBox>
           <MenuText>Sair</MenuText>
         </MenuItem>
-      </MenuList>
+      </MenuContainer>
 
       <BottomNavBar active="profile" navigation={navigation} />
     </Screen>

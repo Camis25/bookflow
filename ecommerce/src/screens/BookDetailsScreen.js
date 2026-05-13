@@ -6,261 +6,106 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  Alert,
+  Modal,
 } from "react-native";
-
 import { Ionicons } from "@expo/vector-icons";
-
 import BottomNavBar from "../components/BottomNavBar";
+import { theme } from "../theme";
 
-import { addToCarrinho } from "../services/database";
-
-export default function BookDetailsScreen({
-  navigation,
-  route,
-}) {
-
-  const { livro } = route.params;
-
-  // ─────────────────────────────────────────────
-  // 🛒 ADICIONAR AO CARRINHO
-  // ─────────────────────────────────────────────
-  const handleAddToCart = async () => {
-
-    try {
-
-      // ⚠️ depois pegar do usuário logado
-      const usuarioId = 1;
-
-      await addToCarrinho(
-        usuarioId,
-        livro.id_livro,
-        1
-      );
-
-      Alert.alert(
-        "Carrinho",
-        `${livro.titulo_livro} foi adicionado ao carrinho`
-      );
-
-    } catch (error) {
-
-      console.error(error);
-
-      Alert.alert(
-        "Erro",
-        "Não foi possível adicionar ao carrinho"
-      );
-    }
-  };
-
-  // ─────────────────────────────────────────────
-  // 💳 COMPRAR AGORA
-  // ─────────────────────────────────────────────
-  const handleBuyNow = async () => {
-
-    try {
-
-      // ⚠️ depois pegar do usuário logado
-      const usuarioId = 1;
-
-      await addToCarrinho(
-        usuarioId,
-        livro.id_livro,
-        1
-      );
-
-      navigation.navigate("CartScreen");
-
-    } catch (error) {
-
-      console.error(error);
-
-      Alert.alert(
-        "Erro",
-        "Não foi possível continuar"
-      );
-    }
-  };
-
+export default function BookDetailsScreen({ navigation }) {
+  const [modalVisible, setModalVisible] = React.useState(false);
   return (
     <View style={styles.container}>
-
       <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* HEADER */}
         <View style={styles.header}>
-
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons
-              name="arrow-back"
-              size={26}
-              color="#fff"
-            />
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={26} color="#fff" />
           </TouchableOpacity>
-
         </View>
 
-        {/* IMAGEM */}
+        {/* IMAGEM SOBREPOSTA */}
         <View style={styles.imageWrapper}>
-
-          {livro.capa_livro ? (
-
-            <Image
-              source={{
-                uri: livro.capa_livro,
-              }}
-              style={styles.image}
-              resizeMode="cover"
-            />
-
-          ) : (
-
-            <View style={styles.imageFallback}>
-
-              <Text style={styles.imageFallbackText}>
-                Sem imagem
-              </Text>
-
-            </View>
-          )}
-
+          <Image
+            source={require("../../assets/img/AHipotese.jpg")}
+            style={styles.image}
+          />
         </View>
 
         {/* CARD */}
         <View style={styles.card}>
-
-          {/* CATEGORIA */}
-          <Text style={styles.category}>
-            {livro.categoria}
-          </Text>
-
-          {/* TÍTULO */}
-          <Text style={styles.title}>
-            {livro.titulo_livro}
-          </Text>
+          <Text style={styles.title}>A Hipótese do Amor</Text>
 
           {/* AVALIAÇÃO */}
-          <Text style={styles.rating}>
-            ★★★★★
-          </Text>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Text style={styles.rating}>★★★★★ <Text style={{ fontSize: 12, color: theme.colors.primary }}>(Ver avaliações)</Text></Text>
+          </TouchableOpacity>
 
-          {/* PREÇO */}
+          {/* PREÇO + ÍCONES */}
           <View style={styles.priceRow}>
-
-            <Text style={styles.price}>
-              R$ {Number(livro.preco).toFixed(2)}
-            </Text>
+            <Text style={styles.price}>R$ 43,81</Text>
 
             <View style={styles.icons}>
-
-              {/* FAVORITO */}
-              <TouchableOpacity>
-                <Ionicons
-                  name="heart-outline"
-                  size={24}
-                  color="#333"
-                />
-              </TouchableOpacity>
-
-              {/* CARRINHO */}
-              <TouchableOpacity
-                onPress={handleAddToCart}
-              >
-                <Ionicons
-                  name="bag-outline"
-                  size={24}
-                  color="#333"
-                />
-              </TouchableOpacity>
-
+              <Ionicons name="bag-outline" size={22} />
+              <Ionicons name="heart-outline" size={22} />
             </View>
-
           </View>
 
-          {/* ENTREGA */}
           <Text style={styles.delivery}>
-            Entrega GRÁTIS para sua região
+            Entrega GRÁTIS: sexta-feira, 6 de março
           </Text>
 
           {/* DESCRIÇÃO */}
-          <Text style={styles.sectionTitle}>
-            Descrição
-          </Text>
-
           <Text style={styles.description}>
-            {
-              livro.descricao ||
-              "Sem descrição disponível."
-            }
+            Quando um namoro de mentira entre cientistas encontra a irresistível
+            força da atração, todas as teorias cuidadosamente calculadas sobre o
+            amor são postas à prova.
           </Text>
 
-          {/* INFO EXTRA */}
-          <View style={styles.infoBox}>
-
-            <Text style={styles.infoText}>
-              ID do livro: {livro.id_livro}
-            </Text>
-
-            <Text style={styles.infoText}>
-              Categoria: {livro.categoria}
-            </Text>
-
-            <Text style={styles.infoText}>
-              Estoque: {livro.estoque}
-            </Text>
-
-          </View>
-
-          {/* BOTÃO ADICIONAR */}
           <TouchableOpacity
-            style={styles.outlineButton}
-            onPress={handleAddToCart}
+            style={[styles.outlineButton, { borderColor: theme.colors.primary }]}
+            onPress={() => navigation.navigate("Cart")}
           >
-
-            <Text style={styles.outlineText}>
-              Adicionar ao carrinho
-            </Text>
-
+            <Text style={[styles.outlineText, { color: theme.colors.primary }]}>Adicionar ao carrinho</Text>
           </TouchableOpacity>
 
-          {/* BOTÃO COMPRAR */}
           <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleBuyNow}
+            style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
+            onPress={() => navigation.navigate("Cart")}
           >
-
-            <Text style={styles.primaryText}>
-              Comprar agora
-            </Text>
-
+            <Text style={styles.primaryText}>Comprar agora</Text>
           </TouchableOpacity>
-
         </View>
-
       </ScrollView>
 
-      {/* NAVBAR */}
-      <BottomNavBar
-        active="home"
-        navigation={navigation}
-      />
+      {/* Modal de Avaliações */}
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Avaliações</Text>
+            <ScrollView style={{ maxHeight: 300 }}>
+              <Text style={{ marginBottom: 10, fontStyle: 'italic' }}>"Livro excelente! Recomendo a todos." - João</Text>
+              <Text style={{ marginBottom: 10, fontStyle: 'italic' }}>"Muito envolvente desde a primeira página." - Maria</Text>
+            </ScrollView>
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}>
+              <Text style={styles.primaryText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
+      {/* NAVBAR FIXA */}
+      <BottomNavBar navigation={navigation} />
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#fff",
   },
 
   header: {
-    backgroundColor: "#7FA6B6",
+    backgroundColor: theme.colors.primary,
     height: 140,
     paddingTop: 60,
     paddingHorizontal: 20,
@@ -268,29 +113,13 @@ const styles = StyleSheet.create({
 
   imageWrapper: {
     alignItems: "center",
-    marginTop: -60,
-    zIndex: 10,
+    marginTop: -60, // 🔥 faz a imagem "flutuar"
   },
 
   image: {
-    width: 170,
-    height: 250,
-    borderRadius: 12,
-    backgroundColor: "#eee",
-  },
-
-  imageFallback: {
-    width: 170,
-    height: 250,
-    borderRadius: 12,
-    backgroundColor: "#ddd",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  imageFallbackText: {
-    color: "#666",
-    fontSize: 16,
+    width: 160,
+    height: 230,
+    borderRadius: 10,
   },
 
   card: {
@@ -298,111 +127,92 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    padding: 24,
-  },
-
-  category: {
-    textAlign: "center",
-    color: "#7FA6B6",
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 8,
+    padding: 20,
   },
 
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#222",
   },
 
   rating: {
     textAlign: "center",
     color: "#f5a623",
-    marginTop: 8,
-    fontSize: 18,
+    marginVertical: 5,
   },
 
   priceRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 10,
   },
 
   price: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "bold",
-    color: "#111",
   },
 
   icons: {
     flexDirection: "row",
-    gap: 16,
+    gap: 10,
   },
 
   delivery: {
-    marginTop: 10,
+    fontSize: 12,
     color: "#666",
-    fontSize: 13,
-  },
-
-  sectionTitle: {
-    marginTop: 24,
-    marginBottom: 10,
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#222",
+    marginTop: 5,
   },
 
   description: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: "#444",
-    textAlign: "justify",
-  },
-
-  infoBox: {
-    marginTop: 20,
-    backgroundColor: "#f5f5f5",
-    padding: 15,
-    borderRadius: 12,
-  },
-
-  infoText: {
+    marginTop: 15,
     fontSize: 14,
-    color: "#555",
-    marginBottom: 6,
+    color: "#444",
+    textAlign: "center",
   },
 
   outlineButton: {
-    marginTop: 28,
+    marginTop: 20,
     borderWidth: 2,
-    borderColor: "#7FA6B6",
+    borderColor: theme.colors.primary,
     borderRadius: 50,
-    paddingVertical: 16,
+    padding: 15,
     alignItems: "center",
   },
 
   outlineText: {
-    color: "#7FA6B6",
-    fontWeight: "700",
-    fontSize: 16,
+    color: theme.colors.primary,
+    fontWeight: "600",
   },
 
   primaryButton: {
-    marginTop: 14,
-    backgroundColor: "#7FA6B6",
+    marginTop: 10,
+    backgroundColor: theme.colors.primary,
     borderRadius: 50,
-    paddingVertical: 16,
+    padding: 15,
     alignItems: "center",
-    marginBottom: 40,
   },
 
   primaryText: {
     color: "#fff",
-    fontWeight: "700",
-    fontSize: 16,
+    fontWeight: "600",
   },
-
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    minHeight: 300,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
 });

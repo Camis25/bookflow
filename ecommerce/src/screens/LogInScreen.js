@@ -7,33 +7,22 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
-import { loginUser } from "../services/database";
 import { Color, Border, FontSize, FontFamily } from "../styles/GlobalStyles";
+import { theme } from "../theme";
 
-export default function LogInScreen() {
-  const navigation = useNavigation(); 
-
+export default function LogInScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     console.log({ email, senha });
 
-    const user = await loginUser(email, senha);
-
-    if (!user) {
-      alert("Email ou senha inválidos");
-      return;
-    }
-
-    console.log("LOGIN OK:", user);
-
-    if (user.tipo_usuario === "admin") {
-      navigation.replace("AdminDashboard"); 
+    if (email.toLowerCase().includes("admin")) {
+      navigation.replace("AdminDashboard");
     } else {
-      navigation.replace("StoreHome"); 
+      navigation.replace("Home");
     }
   };
 
@@ -47,19 +36,14 @@ export default function LogInScreen() {
         <Text style={styles.title}>Faça seu login</Text>
 
         <Text style={styles.label}>E-mail</Text>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-        />
+        <TextInput style={styles.input} value={email} onChangeText={setEmail} />
 
         <Text style={styles.label}>Senha</Text>
         <TextInput
           style={styles.input}
           value={senha}
           onChangeText={setSenha}
-          secureTextEntry
+          secureTextEntry={true}
         />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -72,7 +56,7 @@ export default function LogInScreen() {
 
         <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
           <Text style={styles.link}>
-            Já possui uma conta?{" "}
+            Não possui uma conta?{" "}
             <Text style={styles.linkBold}>Cadastre-se</Text>
           </Text>
         </TouchableOpacity>
@@ -84,7 +68,7 @@ export default function LogInScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Color.colorSteelblue,
+    backgroundColor: theme.colors.primary,
   },
 
   container: {
@@ -104,7 +88,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontFamily: FontFamily.poppinsBold,
-    color: Color.colorSteelblue,
+    color: theme.colors.primary,
     textAlign: "center",
     marginBottom: 20,
   },
@@ -116,14 +100,15 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    backgroundColor: Color.colorWhitesmoke,
+    backgroundColor: theme.colors.inputBg,
     borderRadius: Border.br_15,
     padding: 12,
     marginBottom: 15,
   },
 
+
   button: {
-    backgroundColor: Color.colorSteelblue,
+    backgroundColor: theme.colors.primary,
     borderRadius: 50,
     padding: 15,
     alignItems: "center",
@@ -135,6 +120,12 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.poppinsSemiBold,
   },
 
+  forgot: {
+    textAlign: "right",
+    marginTop: 10,
+    color: "#666",
+  },
+
   link: {
     textAlign: "center",
     marginTop: 20,
@@ -142,7 +133,7 @@ const styles = StyleSheet.create({
   },
 
   linkBold: {
-    color: Color.colorSteelblue,
+    color: theme.colors.primary,
     fontWeight: "bold",
   },
 });

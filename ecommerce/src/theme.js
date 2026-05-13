@@ -1,11 +1,11 @@
 export const theme = {
   colors: {
-    primary: '#4F8593', // Teal/Grey-blue para textos principais ou destaques (ex: Olá Usuário)
-    secondary: '#A1D18A', // Verde suave (Botão no Header de busca, ícones ativos)
-    accent: '#008C99', // Destaques / fundo banner
-    background: '#FFFFFF', // Fundo das telas agoram é branco absoluto
+    primary: '#4F789F', // Azul padrão do Figma para textos, botões e fundos principais
+    secondary: '#365B7D', // Azul escuro para highlights ou botões
+    accent: '#1F3C88', // Azul profundo para detalhes
+    background: '#FFFFFF', // Fundo das telas branco
     surface: '#FFFFFF', // Cards brancos
-    inputBg: '#F3F4F6', // Cinza muito claro (Busca)
+    inputBg: '#F3F4F6', // Cinza muito claro (Busca/Inputs)
     text: '#1F2937', // Quase preto
     textSecondary: '#6B7280', // Cinza médio
     danger: '#EF233C',
