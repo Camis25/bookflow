@@ -7,6 +7,9 @@ import { initDatabase, createAdmin } from "./src/services/database";
 import JsonDataScreen from "./src/screens/JsonDataScreen";
 import UserListScreen from "./src/screens/UserListScreen";
 import AdminDashboardScreen from "./src/screens/AdminDashboardScreen";
+import ReviewScreen from "./src/screens/ReviewScreen";
+import CardListScreen from "./src/screens/CardListScreen";
+import CardFormScreen from "./src/screens/CardFormScreen";
 
 // ─── Telas originais (Giulia) ─────────────────────────────────────────────────
 import SignInScreen from "./src/screens/SignInScreen";
@@ -59,6 +62,9 @@ export default function App() {
           <Stack.Screen name="MyLibrary" component={MyLibraryScreen} />
           <Stack.Screen name="CartScreen" component={CartScreen} />
 
+          <Stack.Screen name="Review" component={ReviewScreen} />
+          <Stack.Screen name="CardList" component={CardListScreen} />
+          <Stack.Screen name="CardForm" component={CardFormScreen} />
           <Stack.Screen name="StoreHome" component={StoreHomeScreen} />
           <Stack.Screen name="SearchScreen" component={SearchScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />

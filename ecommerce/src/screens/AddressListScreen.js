@@ -1,123 +1,101 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { FlatList, ActivityIndicator, View } from 'react-native';
-import styled from 'styled-components/native';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../theme';
+//import React, { useState, useEffect, useCallback } from 'react';
+//import { FlatList, ActivityIndicator, View } from 'react-native';
+//import styled from 'styled-components/native';
+//import { Ionicons } from '@expo/vector-icons';
+//import { theme } from '../theme';
 //import { getEnderecosByUsuario } from '../services/database';
 
 // ─── Styled Components ────────────────────────────────────────────────────────
+import React from "react";
+import styled from "styled-components/native";
 
 const Screen = styled.SafeAreaView`
   flex: 1;
-  background-color: ${theme.colors.background};
+   background-color: #ffffff
 `;
 
-const HeaderGroup = styled.View`
-  background-color: ${theme.colors.secondary};
-  height: 80px;
+const Header = styled.View`
+  height: 52px;
+  background-color: #b7dea4;
   flex-direction: row;
   align-items: center;
-  padding-horizontal: 16px;
-  padding-top: 20px;
+padding-left: 16px;
 `;
 
-const BackBtn = styled.TouchableOpacity`
-  padding: 8px;
-  margin-right: 16px;
+const BackButton = styled.TouchableOpacity`
+  margin-right: 18px;
 `;
 
-const HeaderTitleText = styled.Text`
+const BackText = styled.Text`
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: bold;
+  
+`;
+
+const HeaderTitle = styled.Text`
+  color: #ffffff;
   font-size: 16px;
   font-weight: bold;
-  color: ${theme.colors.white};
 `;
 
-const ContentContainer = styled.View`
+const Content = styled.ScrollView`
   flex: 1;
-  padding-horizontal: 24px;
+  padding: 34px 0 20px 0;
 `;
 
-const TitleContainer = styled.View`
-  align-items: center;
-  margin-top: 40px;
-  margin-bottom: 24px;
-`;
-
-const MainTitle = styled.Text`
-  font-size: 22px;
+const PageTitle = styled.Text`
+  color: #4f789f;
+  font-size: 18px;
   font-weight: 800;
-  color: ${theme.colors.primary};
+   text-align: center;
+    margin-bottom: 22px;
 `;
 
-const ActionRow = styled.View`
-  flex-direction: row;
-  justify-content: flex-end;
-  margin-bottom: 16px;
+
+
+const NewButton = styled.TouchableOpacity`
+  align-self: flex-end;
+  background-color: #4f789f;
+  padding: 8px 22px;
+  border-radius: 18px;
+  margin-right: 26px;
+  margin-bottom: 14px;
 `;
 
-const NovoBtn = styled.TouchableOpacity`
-  background-color: ${theme.colors.primary};
-  border-radius: 16px;
-  padding-vertical: 8px;
-  padding-horizontal: 24px;
-`;
-
-const NovoBtnText = styled.Text`
-  color: ${theme.colors.white};
-  font-size: 12px;
+const NewButtonText = styled.Text`
+  color: #ffffff;
+  font-size: 11px;
   font-weight: bold;
 `;
 
 // Endereço Card
-const AddressCard = styled.TouchableOpacity`
-  background-color: #E2F0D9; /* Verde claro do mock */
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 16px;
-  elevation: 2;
-  shadow-color: #000;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
+const AddressCard = styled.View`
+  background-color: #e5f3dd;
+  border-radius: 14px;
+  padding: 16px;
+  margin: 0 18px 18px 18px;
 `;
 
 const AddressRow = styled.View`
   flex-direction: row;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
+ align-items: center;
+  margin-bottom: 8px;
 `;
 
-const Label = styled.Text`
+const AddressLabel = styled.Text`
+  color: #4f789f;
   font-size: 12px;
-  font-weight: 700;
-  color: ${theme.colors.primary};
   margin-right: 4px;
 `;
 
-const Value = styled.Text`
+const AddressValue = styled.Text`
+  color: #222222;
   font-size: 12px;
-  color: ${theme.colors.text};
-`;
-
-const Loader = styled.ActivityIndicator`
-  margin-top: 40px;
-`;
-
-const EmptyContainer = styled.View`
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-`;
-
-const EmptyText = styled.Text`
-  font-size: 16px;
-  color: ${theme.colors.textSecondary};
-  margin-top: 16px;
-  font-weight: 600;
 `;
 
 // Mocks
-const MOCK_ADDRESSES = [
+const ADDRESSES  = [
   {
     id: 1,
     cep: '04567-209',
@@ -129,102 +107,59 @@ const MOCK_ADDRESSES = [
   }
 ];
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
-
-export default function AddressListScreen({ route, navigation }) {
-  const usuario_id = route.params?.usuario_id ?? 1;
-
-  const [addresses, setAddresses] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const loadAddresses = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getEnderecosByUsuario(usuario_id);
-      setAddresses(data.length > 0 ? data : MOCK_ADDRESSES);
-    } catch (_) {
-      setAddresses(MOCK_ADDRESSES);
-    } finally {
-      setLoading(false);
-    }
-  }, [usuario_id]);
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      loadAddresses();
-    });
-    return unsubscribe;
-  }, [navigation, loadAddresses]);
-
-  const renderItem = ({ item }) => (
-    <AddressCard onPress={() => navigation.navigate('AddressForm', { usuario_id, endereco: item })}>
-      <AddressRow>
-        <Label>CEP:</Label>
-        <Value>{item.cep}</Value>
-      </AddressRow>
-      <AddressRow>
-        <Label>Rua:</Label>
-        <Value>{item.rua}</Value>
-      </AddressRow>
-      <AddressRow>
-        <Label>Bairro:</Label>
-        <Value>{item.bairro}</Value>
-      </AddressRow>
-      <AddressRow>
-        <View style={{ flexDirection: 'row', flex: 1 }}>
-          <Label>Número:</Label>
-          <Value>{item.numero}</Value>
-        </View>
-        <View style={{ flexDirection: 'row', flex: 1.5 }}>
-          <Label>Complemento:</Label>
-          <Value>{item.complemento}</Value>
-        </View>
-      </AddressRow>
-      <AddressRow>
-        <Label>Referência:</Label>
-        <Value>{item.referencia || 'Sem referência'}</Value>
-      </AddressRow>
-    </AddressCard>
-  );
+export default function AddressListScreen({ navigation }) {
 
   return (
     <Screen>
-      <HeaderGroup>
-        <BackBtn onPress={() => navigation.goBack()}>
-           <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
-        </BackBtn>
-        <HeaderTitleText>Pedidos</HeaderTitleText>
-      </HeaderGroup>
+      <Header>
+        <BackButton onPress={() => navigation.goBack()}>
+          <BackText>←</BackText>
+        </BackButton>
 
-      <ContentContainer>
-        <TitleContainer>
-          <MainTitle>Meus Endereços</MainTitle>
-        </TitleContainer>
+        <HeaderTitle>Endereços</HeaderTitle>
+      </Header>
 
-        <ActionRow>
-          <NovoBtn onPress={() => navigation.navigate('AddressForm', { usuario_id })}>
-            <NovoBtnText>Novo</NovoBtnText>
-          </NovoBtn>
-        </ActionRow>
+      <Content showsVerticalScrollIndicator={false}>
+        <PageTitle>Meus Endereços</PageTitle>
 
-        {loading ? (
-          <Loader size="large" color={theme.colors.primary} />
-        ) : (
-          <FlatList
-            data={addresses}
-            keyExtractor={item => String(item.id)}
-            renderItem={renderItem}
-            contentContainerStyle={addresses.length === 0 ? { flex: 1 } : { paddingBottom: 24 }}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <EmptyContainer>
-                <Ionicons name="location-outline" size={64} color={theme.colors.inputBg} />
-                <EmptyText>Nenhum endereço cadastrado.</EmptyText>
-              </EmptyContainer>
-            }
-          />
-        )}
-      </ContentContainer>
+        <NewButton onPress={() => navigation.navigate("AddressForm")}>
+          <NewButtonText>Novo</NewButtonText>
+        </NewButton>
+
+        {ADDRESSES.map((address) => (
+          <AddressCard key={address.id}>
+            <AddressRow>
+              <AddressLabel>CEP:</AddressLabel>
+              <AddressValue>{address.cep}</AddressValue>
+            </AddressRow>
+
+            <AddressRow>
+              <AddressLabel>Rua:</AddressLabel>
+              <AddressValue>{address.rua}</AddressValue>
+            </AddressRow>
+
+            <AddressRow>
+              <AddressLabel>Bairro:</AddressLabel>
+              <AddressValue>{address.bairro}</AddressValue>
+            </AddressRow>
+
+            <AddressRow>
+              <AddressLabel>Número:</AddressLabel>
+              <AddressValue>{address.numero}</AddressValue>
+            </AddressRow>
+
+            <AddressRow>
+              <AddressLabel>Complemento:</AddressLabel>
+              <AddressValue>{address.complemento}</AddressValue>
+            </AddressRow>
+
+            <AddressRow>
+              <AddressLabel>Referência:</AddressLabel>
+              <AddressValue>{address.referencia}</AddressValue>
+            </AddressRow>
+          </AddressCard>
+        ))}
+      </Content>
     </Screen>
   );
 }
