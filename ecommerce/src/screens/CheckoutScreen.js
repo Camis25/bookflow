@@ -34,7 +34,7 @@ export default function CheckoutScreen({ navigation, route }) {
         {/* LOGO / MERCADO PAGO */}
         <View style={styles.paymentHeader}>
           <Image
-            source={require("../../assets/img/LogoMercadoPago.jpg")}
+            source={require("../../assets/images/LogoMercadoPago.jpg")}
             style={styles.logo}
             resizeMode="contain"
           />

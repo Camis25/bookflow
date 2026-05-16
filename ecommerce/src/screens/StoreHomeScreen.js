@@ -236,13 +236,13 @@ export default function StoreHomeScreen({ navigation }) {
           contentContainerStyle={{ paddingRight: 16 }}
         >
           <BannerImage
-            source={require("../../assets/img/NaoFiccao.jpg")}
+            source={require("../../assets/images/NaoFiccao.jpg")}
             imageStyle={{ borderRadius: 12 }}
             resizeMode="cover"
           />
 
           <BannerImage
-            source={require("../../assets/img/Terror.jpg")}
+            source={require("../../assets/images/Terror.jpg")}
             imageStyle={{ borderRadius: 12 }}
             resizeMode="cover"
           />
