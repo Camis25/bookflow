@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FlatList, ActivityIndicator, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
-import { getPedidosByUsuario } from '../services/database';
+import AdminBottomNavBar from '../components/AdminBottomNavBar';
 
 // ─── Styled Components ────────────────────────────────────────────────────────
 
@@ -12,8 +12,12 @@ const Screen = styled.SafeAreaView`
   background-color: ${theme.colors.background};
 `;
 
+const Content = styled.View`
+  flex: 1;
+`;
+
 const HeaderGroup = styled.View`
-  background-color: ${theme.colors.secondary};
+  background-color: ${theme.colors.primary};
   height: 80px;
   flex-direction: row;
   align-items: center;
@@ -100,8 +104,8 @@ const Loader = styled.ActivityIndicator`
 // Mock
 const MOCK_ORDERS = [
   { id: 1, criado_em: '2024-09-01T00:00:00', status: 'Concluído' },
-  { id: 2, criado_em: '2024-09-01T00:00:00', status: 'Concluído' },
-  { id: 3, criado_em: '2024-09-01T00:00:00', status: 'Concluído' },
+  { id: 2, criado_em: '2024-09-01T00:00:00', status: 'Em Processamento' },
+  { id: 3, criado_em: '2024-09-01T00:00:00', status: 'Enviado' },
   { id: 4, criado_em: '2024-08-01T00:00:00', status: 'Concluído' },
 ];
 
@@ -118,23 +122,17 @@ function formatDate(dateStr) {
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
-export default function MyOrdersScreen({ route, navigation }) {
-  const usuario_id = route.params?.usuario_id ?? 1;
-
+export default function AdminOrderListScreen({ navigation }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const loadOrders = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getPedidosByUsuario(usuario_id);
-      setOrders(data.length > 0 ? data : MOCK_ORDERS);
-    } catch (_) {
+  const loadOrders = useCallback(() => {
+    setLoading(true);
+    setTimeout(() => {
       setOrders(MOCK_ORDERS);
-    } finally {
       setLoading(false);
-    }
-  }, [usuario_id]);
+    }, 500);
+  }, []);
 
   useEffect(() => { loadOrders(); }, [loadOrders]);
 
@@ -143,7 +141,7 @@ export default function MyOrdersScreen({ route, navigation }) {
       <TdData flex={0.5}>{String(item.id).padStart(2, '0')}</TdData>
       <TdData flex={1.2}>{formatDate(item.criado_em)}</TdData>
       <TdData flex={1}>{item.status}</TdData>
-      <DetailsButton onPress={() => navigation.navigate('OrderDetail', { order: item })}>
+      <DetailsButton onPress={() => navigation.navigate('OrderDetail', { order: item, isAdmin: true })}>
         <DetailsBtnText>Detalhes</DetailsBtnText>
       </DetailsButton>
     </TableRow>
@@ -151,36 +149,39 @@ export default function MyOrdersScreen({ route, navigation }) {
 
   return (
     <Screen>
-      <HeaderGroup>
-        <BackBtn onPress={() => navigation.goBack()}>
-           <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
-        </BackBtn>
-        <HeaderTitleText>Pedidos</HeaderTitleText>
-      </HeaderGroup>
+      <Content>
+        <HeaderGroup>
+          <BackBtn onPress={() => navigation.goBack()}>
+             <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
+          </BackBtn>
+          <HeaderTitleText>Administrador</HeaderTitleText>
+        </HeaderGroup>
 
-      <TitleContainer>
-        <MainTitle>Meus Pedidos</MainTitle>
-      </TitleContainer>
+        <TitleContainer>
+          <MainTitle>Vendas</MainTitle>
+        </TitleContainer>
 
-      {loading ? (
-        <Loader size="large" color={theme.colors.primary} />
-      ) : (
-        <TableContainer>
-          <TableHeader>
-            <ThData flex={0.5}>Número</ThData>
-            <ThData flex={1.2}>Data</ThData>
-            <ThData flex={1}>Status</ThData>
-            <ThData flex={1} align="right"></ThData>
-          </TableHeader>
+        {loading ? (
+          <Loader size="large" color={theme.colors.primary} />
+        ) : (
+          <TableContainer>
+            <TableHeader>
+              <ThData flex={0.5}>Número</ThData>
+              <ThData flex={1.2}>Data</ThData>
+              <ThData flex={1}>Status</ThData>
+              <ThData flex={1} align="right"></ThData>
+            </TableHeader>
 
-          <FlatList
-            data={orders}
-            keyExtractor={(item, index) => String(item.id) + index}
-            renderItem={renderItem}
-            showsVerticalScrollIndicator={false}
-          />
-        </TableContainer>
-      )}
+            <FlatList
+              data={orders}
+              keyExtractor={(item, index) => String(item.id) + index}
+              renderItem={renderItem}
+              showsVerticalScrollIndicator={false}
+            />
+          </TableContainer>
+        )}
+      </Content>
+      <AdminBottomNavBar active="home" navigation={navigation} />
     </Screen>
   );
 }

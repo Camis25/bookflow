@@ -3,8 +3,7 @@ import { Alert, KeyboardAvoidingView, Platform, View } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
-//import { insertEndereco, updateEndereco } from '../services/database';
-import { useRouter } from "expo-router";
+import { insertEndereco, updateEndereco } from '../services/database';
 
 // ─── Styled Components ────────────────────────────────────────────────────────
 
@@ -96,8 +95,7 @@ const ErrorText = styled.Text`
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
-export default function AddressFormScreen() {
-  const router = useRouter();
+export default function AddressFormScreen({ route, navigation }) {
   const { usuario_id, endereco } = route.params || {};
 
   const isEditing = !!endereco;

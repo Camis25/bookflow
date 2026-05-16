@@ -3,7 +3,7 @@ import { Alert, KeyboardAvoidingView, Platform, View } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme';
-//import { updateUsuario } from '../services/database';
+import { updateUsuario } from '../services/database';
 import BottomNavBar from '../components/BottomNavBar';
 
 // ─── Styled Components ────────────────────────────────────────────────────────

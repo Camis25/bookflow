@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components/native";
+import { theme } from "../theme";
+import { Ionicons } from "@expo/vector-icons";
 
 const Screen = styled.SafeAreaView`
   flex: 1;
@@ -8,7 +10,7 @@ const Screen = styled.SafeAreaView`
 
 const Header = styled.View`
   height: 65px;
-  background-color: #b7dea4;
+  background-color: ${theme.colors.primary};
   justify-content: center;
   padding-left: 52px;
 `;
@@ -126,7 +128,7 @@ const StarText = styled.Text`
 `;
 
 const SendButton = styled.TouchableOpacity`
-  background-color: #4f789f;
+  background-color: ${theme.colors.primary};
   padding: 14px 28px;
   border-radius: 22px;
 `;

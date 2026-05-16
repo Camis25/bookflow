@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../theme";
 
 const Screen = styled.SafeAreaView`
   flex: 1;
@@ -9,7 +10,7 @@ const Screen = styled.SafeAreaView`
 
 const Header = styled.View`
   height: 52px;
-  background-color: #b7dea4;
+  background-color: ${theme.colors.primary};
   justify-content: center;
   padding-left: 24px;
 `;
@@ -26,7 +27,7 @@ const Content = styled.ScrollView`
 `;
 
 const Title = styled.Text`
-  color: #4f789f;
+  color: ${theme.colors.primary};
   font-size: 22px;
   font-weight: 800;
   text-align: center;
@@ -34,7 +35,7 @@ const Title = styled.Text`
 `;
 
 const Label = styled.Text`
-  color: #4f789f;
+  color: ${theme.colors.primary};
   font-size: 13px;
   font-weight: bold;
   margin-bottom: 8px;
@@ -50,7 +51,7 @@ const BrandButton = styled.TouchableOpacity`
   width: 44px;
   height: 28px;
   border-radius: 4px;
-  background-color: ${(props) => props.bg || "#4f789f"};
+  background-color: ${(props) => props.bg || theme.colors.primary};
   align-items: center;
   justify-content: center;
 `;
@@ -72,7 +73,7 @@ const Radio = styled.TouchableOpacity`
   width: 18px;
   height: 18px;
   border-radius: 9px;
-  background-color: ${(props) => (props.active ? "#4f789f" : "#eeeeee")};
+  background-color: ${(props) => (props.active ? theme.colors.primary : "#eeeeee")};
 `;
 
 const Input = styled.TextInput`
@@ -118,7 +119,7 @@ const SmallInput = styled.TextInput`
 
 const SaveButton = styled.TouchableOpacity`
   height: 48px;
-  background-color: #4f789f;
+  background-color: ${theme.colors.primary};
   border-radius: 24px;
   align-items: center;
   justify-content: center;

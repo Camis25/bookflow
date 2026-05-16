@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
 import BottomNavBar from "../components/BottomNavBar";
+import { theme } from "../theme";
 
 const Screen = styled.SafeAreaView`
   flex: 1;
@@ -10,23 +11,23 @@ const Screen = styled.SafeAreaView`
 
 const Header = styled.View`
   height: 250px;
-  background-color: #b7dea4;
+  background-color: ${theme.colors.primary};
   align-items: center;
   justify-content: center;
 `;
 
 const AvatarContainer = styled.View`
-width: 76px;
+  width: 76px;
   height: 76px;
   border-radius: 38px;
-  background-color: #ffffff;
+  background-color: ${theme.colors.white};
   justify-content: center;
   align-items: center;
   margin-bottom: 12px;
 `;
 
 const UserName = styled.Text`
-  color: #ffffff;
+  color: ${theme.colors.white};
   font-size: 15px;
   font-weight: 800;
 `;
@@ -37,6 +38,7 @@ const UserEmail = styled.Text`
   margin-top: 4px;
   text-decoration-line: underline;
 `;
+
 const MenuContainer = styled.ScrollView`
   flex: 1;
 `;
@@ -56,9 +58,9 @@ const IconBox = styled.View`
 const MenuText = styled.Text`
   font-size: 16px;
   font-weight: 800;
-  color: #4f789f;
+  color: ${theme.colors.primary};
 `;
-// Mock do usuário autenticado (Você pode testar isAdmin = true / false)
+
 const MOCK_USER = {
   id: 1,
   nome: "Fulano dos Santos",
@@ -66,11 +68,16 @@ const MOCK_USER = {
   isAdmin: false,
 };
 
-export default function ProfileScreen({ navigation }) {
-  const user = MOCK_USER;
+export default function ProfileScreen({ route, navigation }) {
+  const isRouteAdmin = route?.params?.isAdmin || false;
+  
+  const user = {
+    ...MOCK_USER,
+    isAdmin: isRouteAdmin
+  };
 
   const handleLogout = () => {
-   navigation.reset({
+    navigation.reset({
       index: 0,
       routes: [{ name: "Login" }],
     });
@@ -80,50 +87,77 @@ export default function ProfileScreen({ navigation }) {
     <Screen>
       <Header>
         <AvatarContainer>
-          <Ionicons name="person-outline" size={58} color="#b7dea4" />
+          <Ionicons name="person-outline" size={58} color={theme.colors.primary} />
         </AvatarContainer>
 
         <UserName>{user.nome}</UserName>
         <UserEmail>{user.email}</UserEmail>
       </Header>
 
-       <MenuContainer showsVerticalScrollIndicator={false}>
+      <MenuContainer showsVerticalScrollIndicator={false}>
         <MenuItem onPress={() => navigation.navigate("EditProfile", { usuario: user })}>
           <IconBox>
-            <Ionicons name="person-outline" size={25} color="#4f789f" />
+            <Ionicons name="person-outline" size={25} color={theme.colors.primary} />
           </IconBox>
           <MenuText>Editar dados pessoais</MenuText>
         </MenuItem>
 
-       <MenuItem onPress={() => navigation.navigate("MyOrders", { usuario_id: user.id })}>
-          <IconBox>
-            <Ionicons name="book-outline" size={25} color="#4f789f" />
-          </IconBox>
-          <MenuText>Pedidos</MenuText>
-        </MenuItem>
+        {user.isAdmin ? (
+          <>
+            <MenuItem onPress={() => navigation.navigate("AdminOrderList")}>
+              <IconBox>
+                <Ionicons name="book-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
+              <MenuText>Pedidos</MenuText>
+            </MenuItem>
 
-        <MenuItem onPress={() => navigation.navigate("CardList")}>
-          <IconBox>
-            <Ionicons name="card-outline" size={25} color="#4f789f" />
-          </IconBox>
-          <MenuText>Cartões</MenuText>
-        </MenuItem>
+            <MenuItem onPress={() => navigation.navigate("AdminProductList")}>
+              <IconBox>
+                <Ionicons name="document-text-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
+              <MenuText>Produtos</MenuText>
+            </MenuItem>
 
-        <MenuItem onPress={() => navigation.navigate("AddressList", { usuario_id: user.id })}>
-          <IconBox>
-            <Ionicons name="map-outline" size={25} color="#4f789f" />
-          </IconBox>
-          <MenuText>Endereços</MenuText>
-        </MenuItem>
+            <MenuItem onPress={() => navigation.navigate("AdminCategoryList")}>
+              <IconBox>
+                <Ionicons name="pricetags-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
+              <MenuText>Categorias</MenuText>
+            </MenuItem>
+          </>
+        ) : (
+          <>
+            <MenuItem onPress={() => navigation.navigate("MyOrders", { usuario_id: user.id })}>
+              <IconBox>
+                <Ionicons name="book-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
+              <MenuText>Pedidos</MenuText>
+            </MenuItem>
+
+            <MenuItem onPress={() => navigation.navigate("CardList")}>
+              <IconBox>
+                <Ionicons name="card-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
+              <MenuText>Cartões</MenuText>
+            </MenuItem>
+
+            <MenuItem onPress={() => navigation.navigate("AddressList", { usuario_id: user.id })}>
+              <IconBox>
+                <Ionicons name="map-outline" size={25} color={theme.colors.primary} />
+              </IconBox>
+              <MenuText>Endereços</MenuText>
+            </MenuItem>
+          </>
+        )}
 
         <MenuItem onPress={handleLogout}>
-        <IconBox>
-            <Ionicons name="exit-outline" size={25} color="#4f789f" />
+          <IconBox>
+            <Ionicons name="exit-outline" size={25} color={theme.colors.primary} />
           </IconBox>
           <MenuText>Sair</MenuText>
         </MenuItem>
-      
-</MenuContainer>
+      </MenuContainer>
+
       <BottomNavBar active="profile" navigation={navigation} />
     </Screen>
   );

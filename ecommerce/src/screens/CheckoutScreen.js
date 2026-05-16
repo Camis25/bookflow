@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { theme } from "../theme";
 
 export default function CheckoutScreen({ navigation, route }) {
   const [pagamento, setPagamento] = useState(null);
@@ -33,7 +34,7 @@ export default function CheckoutScreen({ navigation, route }) {
         {/* LOGO / MERCADO PAGO */}
         <View style={styles.paymentHeader}>
           <Image
-            source={require("../../assets/images/LogoMercadoPago.jpg")}
+            source={require("../../assets/img/LogoMercadoPago.jpg")}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -85,6 +86,15 @@ export default function CheckoutScreen({ navigation, route }) {
               </View>
               <Text style={styles.optionText}>Cartão de crédito</Text>
             </TouchableOpacity>
+
+            {pagamento === "cartao" && (
+              <TouchableOpacity
+                style={{ marginLeft: 28, marginTop: -5, marginBottom: 15 }}
+                onPress={() => navigation.navigate("CardForm")}
+              >
+                <Text style={{ color: theme.colors.primary, fontWeight: "bold" }}>+ Adicionar cartão</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -123,7 +133,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#7FA6B6",
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 15,
@@ -197,7 +207,7 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 9,
     borderWidth: 2,
-    borderColor: "#7FA6B6",
+    borderColor: theme.colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -206,7 +216,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: "#7FA6B6",
+    backgroundColor: theme.colors.primary,
   },
 
   footer: {
@@ -229,7 +239,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: "#7FA6B6",
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 6,

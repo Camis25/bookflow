@@ -15,11 +15,7 @@ import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { theme } from '../theme';
-
-import {
-  searchLivros,
-} from '../services/database';
-
+import { searchLivros } from '../services/database';
 import BottomNavBar from '../components/BottomNavBar';
 
 // ─────────────────────────────────────────────
@@ -250,24 +246,8 @@ export default function SearchScreen({
 
   }, [query, doSearch]);
 
-  // ─────────────────────────────
-  // 📖 ABRIR DETALHES
-  // ─────────────────────────────
-  const openBook = (book) => {
-
-    navigation.navigate(
-      'BookDetailsScreen',
-      {
-        livro: {
-          id_livro: book.id,
-          titulo_livro: book.titulo,
-          autor_livro: book.autor_livro,
-          preco: book.preco,
-          capa_livro: book.imagem_url,
-          categoria: book.categoria,
-        },
-      }
-    );
+  const handleBuy = (book) => {
+    navigation.navigate('BookDetails', { book });
   };
 
   // ─────────────────────────────

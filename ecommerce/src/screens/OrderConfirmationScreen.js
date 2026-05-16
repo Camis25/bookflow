@@ -75,7 +75,7 @@ export default function OrderConfirmationScreen({ route, navigation }) {
     <Screen>
       <Content showsVerticalScrollIndicator={false}>
         <TopHeaderRow>
-           <BackBtn onPress={() => navigation.navigate('StoreHome')}>
+           <BackBtn onPress={() => navigation.navigate('Home')}>
              <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
            </BackBtn>
         </TopHeaderRow>

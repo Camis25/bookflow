@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, View, TouchableOpacity } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker'; // ✅ necessário
 import { theme } from '../theme';
-import { getAllLivros, insertLivro, updateLivro, getAllCategorias } from '../services/database';
+import { insertLivro, updateLivro, getAllCategorias } from '../services/database';
 
-// ─── Styled ─────────────────────────────────
+// ─── Styled Components ────────────────────────────────────────────────────────
 
 const Screen = styled.SafeAreaView`
   flex: 1;
@@ -112,76 +111,20 @@ const SaveButtonText = styled.Text`
   font-weight: bold;
 `;
 
-// ─── SCREEN ─────────────────────────────────
+// ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function AdminProductFormScreen({ route, navigation }) {
   const { livro } = route.params || {};
   const isEditing = !!livro;
 
-  const [titulo, setTitulo] = useState(livro?.titulo_livro || '');
+  const [titulo, setTitulo] = useState(livro?.titulo || '');
   const [descricao, setDescricao] = useState(livro?.descricao || '');
   const [preco, setPreco] = useState(livro ? String(livro.preco) : '');
-  const [estoque, setEstoque] = useState(livro ? String(livro.estoque) : '0');
-  const [categoria, setCategoria] = useState(livro?.id_categoria || '');
-  const [imagem, setImagem] = useState(livro?.capa_livro || '');
+  const [estoque, setEstoque] = useState(livro ? String(livro.estoque) : '0'); 
+  const [categoria, setCategoria] = useState(livro?.categoria || '');
+  const [imagemUrl, setImagemUrl] = useState(livro?.imagem_url || '');
 
-  const [categorias, setCategorias] = useState([]);
-  const [livros, setLivros] = useState([]);
   const [saving, setSaving] = useState(false);
-
-  // 🔥 carregar categorias
-  useEffect(() => {
-    const carregarCategorias = async () => {
-      try {
-        const data = await getAllCategorias();
-        setCategorias(data);
-      } catch (error) {
-        console.log("Erro categorias:", error);
-      }
-    };
-
-    carregarCategorias();
-  }, []);
-
-  // escolher imagem da galeria
-  const escolherImagem = async () => {
-    try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-      if (!permission.granted) {
-        Alert.alert("Permissão necessária");
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        quality: 0.7,
-      });
-
-      if (!result.canceled) {
-        setImagem(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const validarCategoria = () => {
-    if (categorias.length === 0) {
-      Alert.alert("Nenhuma categoria cadastrada");
-      return;
-    }
-
-    Alert.alert(
-      "Selecionar Categoria",
-      "",
-      categorias.map(cat => ({
-        text: cat.nome_categoria,
-        onPress: () => setCategoria(cat.id_categoria)
-      }))
-    );
-  }
-
 
   const handleSave = async () => {
     if (!titulo || !preco || !categoria) {
@@ -191,33 +134,16 @@ export default function AdminProductFormScreen({ route, navigation }) {
 
     try {
       setSaving(true);
-
       if (isEditing) {
-        await updateLivro(
-          livro.id_livro,
-          titulo,
-          parseFloat(preco),
-          parseInt(estoque),
-          categoria,
-          imagem
-        );
+        await updateLivro(livro.id, titulo, descricao, parseFloat(preco), parseInt(estoque, 10), categoria, imagemUrl);
         Alert.alert('Sucesso', 'Produto atualizado!');
       } else {
-        await insertLivro(
-          titulo,
-          parseFloat(preco),
-          parseInt(estoque),
-          categoria,
-          imagem
-        );
+        await insertLivro(titulo, descricao, parseFloat(preco), parseInt(estoque, 10), categoria, imagemUrl);
         Alert.alert('Sucesso', 'Produto criado!');
       }
-
       navigation.goBack();
-
-    } catch (error) {
-      console.log(error);
-      Alert.alert('Erro', 'Falha ao salvar.');
+    } catch (_) {
+      Alert.alert('Erro', 'Falha ao salvar produto.');
     } finally {
       setSaving(false);
     }
@@ -227,54 +153,34 @@ export default function AdminProductFormScreen({ route, navigation }) {
     <Screen>
       <HeaderGroup>
         <BackBtn onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
+           <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
         </BackBtn>
-        <HeaderTitleText>
-          {isEditing ? 'Editar Produto' : 'Novo Produto'}
-        </HeaderTitleText>
+        <HeaderTitleText>{isEditing ? 'Editar Produto' : 'Novo Produto'}</HeaderTitleText>
       </HeaderGroup>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1 }}
-      >
-        <Content>
-
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <Content showsVerticalScrollIndicator={false}>
           <TitleContainer>
-            <MainTitle>
-              {isEditing ? 'Editar Produto' : 'Novo Produto'}
-            </MainTitle>
+            <MainTitle>{isEditing ? 'Editar Produto' : 'Novo Produto'}</MainTitle>
           </TitleContainer>
 
           <InputGroup>
-            <Label>Imagem (URL ou Galeria)</Label>
-
+            <Label>Imagem</Label>
             <ImageAreaBlock>
-              {imagem ? (
-                <CoverImage
-                  source={{ uri: imagem }}
-                  onError={() => {
-                    console.log("Erro ao carregar imagem");
-                    setImagem('');
-                  }}
-                />
+              {imagemUrl ? (
+                <CoverImage source={{ uri: imagemUrl }} resizeMode="cover" />
               ) : (
-                <Ionicons name="image-outline" size={32} color="#999" />
+                <Ionicons name="image-outline" size={32} color={theme.colors.textSecondary} />
               )}
             </ImageAreaBlock>
-
+            {/* Opcional: Campo para URL da imagem caso precise via teclado futuramente */}
             <Input
               style={{ marginTop: 12 }}
-              value={imagem}
-              onChangeText={setImagem}
-              placeholder="Cole a URL da imagem"
+              value={imagemUrl}
+              onChangeText={setImagemUrl}
+              placeholder="Cole a URL da Imagem aqui"
+              placeholderTextColor={theme.colors.textSecondary}
             />
-
-            <TouchableOpacity onPress={escolherImagem}>
-              <Label style={{ marginTop: 10 }}>
-                Selecionar da galeria
-              </Label>
-            </TouchableOpacity>
           </InputGroup>
 
           <InputGroup>
@@ -284,41 +190,38 @@ export default function AdminProductFormScreen({ route, navigation }) {
 
           <InputGroup>
             <Label>Descrição</Label>
-            <TextArea value={descricao} onChangeText={setDescricao} multiline />
-          </InputGroup>
-
-          <InputGroup>
-            <Label>Preço</Label>
-            <Input value={preco} onChangeText={setPreco} keyboardType="numeric" />
-          </InputGroup>
-
-          <InputGroup>
-          <TouchableOpacity activeOpacity={0.8} onPress={validarCategoria}>
-            <Label>Categoria</Label>
-            <Input
-              pointerEvents="none"
-              placeholder="Selecione uma categoria"
-              value={
-                categorias.find(c => c.id_categoria === categoria)?.nome_categoria || ''
-              }
-              editable={false}
+            <TextArea 
+               value={descricao} 
+               onChangeText={setDescricao} 
+               multiline={true} 
             />
-          </TouchableOpacity>
           </InputGroup>
 
-          <InputGroup>
-            <Label>Estoque</Label>
-            <Input value={estoque} onChangeText={setEstoque} keyboardType="numeric" />
-          </InputGroup>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <InputGroup style={{ flex: 1, marginRight: 8 }}>
+              <Label>Preço</Label>
+              <Input
+                value={preco}
+                onChangeText={setPreco}
+                keyboardType="numeric"
+              />
+            </InputGroup>
 
-        <SaveButton onPress={handleSave} disabled={saving}>
-          <SaveButtonText>
-            {saving ? 'Salvando...' : 'Salvar'}
-          </SaveButtonText>
-        </SaveButton>
+            <InputGroup style={{ flex: 1, marginLeft: 8 }}>
+              <Label>Categoria</Label>
+              <Input
+                value={categoria}
+                onChangeText={setCategoria}
+              />
+            </InputGroup>
+          </View>
 
-      </Content>
-    </KeyboardAvoidingView>
-    </Screen >
+          <SaveButton onPress={handleSave} disabled={saving}>
+            <SaveButtonText>{saving ? 'Salvando...' : 'Salvar'}</SaveButtonText>
+          </SaveButton>
+
+        </Content>
+      </KeyboardAvoidingView>
+    </Screen>
   );
 }

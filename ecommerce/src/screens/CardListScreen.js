@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../theme";
 
 const Screen = styled.SafeAreaView`
   flex: 1;
@@ -9,7 +10,7 @@ const Screen = styled.SafeAreaView`
 
 const Header = styled.View`
   height: 52px;
-  background-color: #b7dea4;
+  background-color: ${theme.colors.primary};
   justify-content: center;
   padding-left: 24px;
 `;
@@ -26,7 +27,7 @@ const Content = styled.ScrollView`
 `;
 
 const PageTitle = styled.Text`
-  color: #4f789f;
+  color: ${theme.colors.primary};
   font-size: 18px;
   font-weight: 800;
   text-align: center;
@@ -35,7 +36,7 @@ const PageTitle = styled.Text`
 
 const NewButton = styled.TouchableOpacity`
   align-self: flex-end;
-  background-color: #4f789f;
+  background-color: ${theme.colors.primary};
   padding: 8px 26px;
   border-radius: 18px;
   margin-bottom: 18px;

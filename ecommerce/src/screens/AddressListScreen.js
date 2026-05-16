@@ -1,17 +1,10 @@
-//import React, { useState, useEffect, useCallback } from 'react';
-//import { FlatList, ActivityIndicator, View } from 'react-native';
-//import styled from 'styled-components/native';
-//import { Ionicons } from '@expo/vector-icons';
-//import { theme } from '../theme';
-//import { getEnderecosByUsuario } from '../services/database';
-
-// ─── Styled Components ────────────────────────────────────────────────────────
 import React from "react";
 import styled from "styled-components/native";
+import { theme } from "../theme";
 
 const Screen = styled.SafeAreaView`
   flex: 1;
-   background-color: #ffffff
+  background-color: #ffffff;
 `;
 
 const Header = styled.View`
@@ -45,18 +38,16 @@ const Content = styled.ScrollView`
 `;
 
 const PageTitle = styled.Text`
-  color: #4f789f;
+  color: ${theme.colors.primary};
   font-size: 18px;
   font-weight: 800;
-   text-align: center;
-    margin-bottom: 22px;
+  text-align: center;
+  margin-bottom: 22px;
 `;
-
-
 
 const NewButton = styled.TouchableOpacity`
   align-self: flex-end;
-  background-color: #4f789f;
+  background-color: ${theme.colors.primary};
   padding: 8px 22px;
   border-radius: 18px;
   margin-right: 26px;
@@ -69,7 +60,6 @@ const NewButtonText = styled.Text`
   font-weight: bold;
 `;
 
-// Endereço Card
 const AddressCard = styled.View`
   background-color: #e5f3dd;
   border-radius: 14px;
@@ -79,13 +69,14 @@ const AddressCard = styled.View`
 
 const AddressRow = styled.View`
   flex-direction: row;
- align-items: center;
+  align-items: center;
   margin-bottom: 8px;
 `;
 
 const AddressLabel = styled.Text`
-  color: #4f789f;
+  color: ${theme.colors.primary};
   font-size: 12px;
+  font-weight: bold;
   margin-right: 4px;
 `;
 
@@ -94,21 +85,19 @@ const AddressValue = styled.Text`
   font-size: 12px;
 `;
 
-// Mocks
-const ADDRESSES  = [
+const ADDRESSES = [
   {
     id: 1,
-    cep: '04567-209',
-    rua: 'Cerejeiras',
-    bairro: 'Jardim Cecília',
-    numero: '9',
-    complemento: 'B',
-    referencia: 'Sem referência',
-  }
+    cep: "04567-209",
+    rua: "Cerejeiras",
+    bairro: "Jardim Cecília",
+    numero: "9",
+    complemento: "B",
+    referencia: "Sem referência",
+  },
 ];
 
 export default function AddressListScreen({ navigation }) {
-
   return (
     <Screen>
       <Header>
