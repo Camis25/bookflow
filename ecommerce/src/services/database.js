@@ -330,26 +330,24 @@ export const getAllLivros = async () => {
   try {
     return await db.getAllAsync(`
       SELECT
-        l.id_livro,
-        l.titulo_livro,
+        l.id_livro AS id,
+        l.titulo_livro AS titulo,
         l.preco,
-        l.capa_livro,
-        c.nome_categoria as categoria
+        l.estoque,
+        l.capa_livro AS imagem_url,
+        l.id_categoria AS categoria
 
       FROM tb_livro l
-
-      LEFT JOIN tb_categoria c
-        ON l.id_categoria = c.id_categoria
     `);
   } catch (error) {
     console.error(error);
-
     return [];
   }
 };
 
 export const insertLivro = async (
   titulo,
+  descricao,
   preco,
   estoque,
   categoria,
@@ -359,16 +357,18 @@ export const insertLivro = async (
     `
     INSERT INTO tb_livro (
       titulo_livro,
+      autor_livro,
       preco,
       estoque,
       id_categoria,
       capa_livro
     )
 
-    VALUES (?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?)
     `,
     [
       titulo,
+      descricao,
       preco,
       estoque,
       categoria,
@@ -380,9 +380,11 @@ export const insertLivro = async (
 export const updateLivro = async (
   id,
   titulo,
+  descricao,
   preco,
   estoque,
-  id_categoria
+  id_categoria,
+  imagem
 ) => {
   try {
     await db.runAsync(
@@ -391,17 +393,21 @@ export const updateLivro = async (
 
       SET
         titulo_livro = ?,
+        autor_livro = ?,
         preco = ?,
         estoque = ?,
-        id_categoria = ?
+        id_categoria = ?,
+        capa_livro = ?
 
       WHERE id_livro = ?
       `,
       [
         titulo,
+        descricao,
         preco,
         estoque,
         id_categoria,
+        imagem,
         id,
       ]
     );
@@ -703,16 +709,14 @@ export const clearCarrinho = async (
 export const getAllCategorias = async () => {
   try {
     return await db.getAllAsync(`
-      SELECT *
+      SELECT
+        id_categoria AS id,
+        nome_categoria AS nome
       FROM tb_categoria
       ORDER BY nome_categoria
     `);
   } catch (error) {
-    console.error(
-      'Erro ao buscar categorias:',
-      error
-    );
-
+    console.log(error);
     return [];
   }
 };
@@ -721,16 +725,13 @@ export const insertCategoria = async (nome) => {
   try {
     await db.runAsync(
       `
-      INSERT INTO tb_categoria (
-        nome_categoria
-      )
-
+      INSERT INTO tb_categoria (nome_categoria)
       VALUES (?)
       `,
       [nome]
     );
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
 };
 
@@ -764,7 +765,7 @@ export const deleteCategoria = async (id) => {
       [id]
     );
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
 };
 

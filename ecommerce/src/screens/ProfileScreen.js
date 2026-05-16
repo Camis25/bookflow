@@ -1,7 +1,13 @@
 import React from "react";
+
 import styled from "styled-components/native";
+
 import { Ionicons } from "@expo/vector-icons";
+
 import BottomNavBar from "../components/BottomNavBar";
+
+import AdminBottomNavBar from "../components/AdminBottomNavBar";
+
 import { theme } from "../theme";
 
 const Screen = styled.SafeAreaView`
@@ -61,19 +67,27 @@ const MenuText = styled.Text`
   color: ${theme.colors.primary};
 `;
 
-const MOCK_USER = {
-  id: 1,
-  nome: "Fulano dos Santos",
-  email: "fulano@snatos.com",
-  isAdmin: false,
-};
+export default function ProfileScreen({
+  route,
+  navigation,
+}) {
 
-export default function ProfileScreen({ route, navigation }) {
-  const isRouteAdmin = route?.params?.isAdmin || false;
-  
-  const user = {
-    ...MOCK_USER,
-    isAdmin: isRouteAdmin
+  const usuario = route?.params?.usuario;
+
+  const isAdmin =
+    route?.params?.isAdmin || false;
+
+  const user = usuario || {
+    id: 1,
+    nome: isAdmin
+      ? "Administrador"
+      : "Usuário",
+
+    email: isAdmin
+      ? "admin@bookflow.com"
+      : "usuario@bookflow.com",
+
+    isAdmin,
   };
 
   const handleLogout = () => {
@@ -87,78 +101,235 @@ export default function ProfileScreen({ route, navigation }) {
     <Screen>
       <Header>
         <AvatarContainer>
-          <Ionicons name="person-outline" size={58} color={theme.colors.primary} />
+          <Ionicons
+            name="person-outline"
+            size={58}
+            color={theme.colors.primary}
+          />
         </AvatarContainer>
 
-        <UserName>{user.nome}</UserName>
-        <UserEmail>{user.email}</UserEmail>
+        <UserName>
+          {user.nome}
+        </UserName>
+
+        <UserEmail>
+          {user.email}
+        </UserEmail>
       </Header>
 
-      <MenuContainer showsVerticalScrollIndicator={false}>
-        <MenuItem onPress={() => navigation.navigate("EditProfile", { usuario: user })}>
+      <MenuContainer
+        showsVerticalScrollIndicator={false}
+      >
+
+        <MenuItem
+          onPress={() =>
+            navigation.navigate(
+              "EditProfile",
+              {
+                usuario: user,
+              }
+            )
+          }
+        >
           <IconBox>
-            <Ionicons name="person-outline" size={25} color={theme.colors.primary} />
+            <Ionicons
+              name="person-outline"
+              size={25}
+              color={theme.colors.primary}
+            />
           </IconBox>
-          <MenuText>Editar dados pessoais</MenuText>
+
+          <MenuText>
+            Editar dados pessoais
+          </MenuText>
         </MenuItem>
 
-        {user.isAdmin ? (
+        {/* ADMIN */}
+
+        {isAdmin ? (
           <>
-            <MenuItem onPress={() => navigation.navigate("AdminOrderList")}>
+            <MenuItem
+              onPress={() =>
+                navigation.navigate(
+                  "AdminOrderList"
+                )
+              }
+            >
               <IconBox>
-                <Ionicons name="book-outline" size={25} color={theme.colors.primary} />
+                <Ionicons
+                  name="book-outline"
+                  size={25}
+                  color={theme.colors.primary}
+                />
               </IconBox>
-              <MenuText>Pedidos</MenuText>
+
+              <MenuText>
+                Pedidos
+              </MenuText>
             </MenuItem>
 
-            <MenuItem onPress={() => navigation.navigate("AdminProductList")}>
+            <MenuItem
+              onPress={() =>
+                navigation.navigate(
+                  "AdminProductList"
+                )
+              }
+            >
               <IconBox>
-                <Ionicons name="document-text-outline" size={25} color={theme.colors.primary} />
+                <Ionicons
+                  name="document-text-outline"
+                  size={25}
+                  color={theme.colors.primary}
+                />
               </IconBox>
-              <MenuText>Produtos</MenuText>
+
+              <MenuText>
+                Produtos
+              </MenuText>
             </MenuItem>
 
-            <MenuItem onPress={() => navigation.navigate("AdminCategoryList")}>
+            <MenuItem
+              onPress={() =>
+                navigation.navigate(
+                  "AdminCategoryList"
+                )
+              }
+            >
               <IconBox>
-                <Ionicons name="pricetags-outline" size={25} color={theme.colors.primary} />
+                <Ionicons
+                  name="pricetags-outline"
+                  size={25}
+                  color={theme.colors.primary}
+                />
               </IconBox>
-              <MenuText>Categorias</MenuText>
+
+              <MenuText>
+                Categorias
+              </MenuText>
             </MenuItem>
+
+            <MenuItem
+                          onPress={() =>
+                            navigation.navigate(
+                              "JsonData"
+                            )
+                          }
+                        >
+                          <IconBox>
+                            <Ionicons
+                              name="book-outline"
+                              size={25}
+                              color={theme.colors.primary}
+                            />
+                          </IconBox>
+
+                          <MenuText>
+                            Json Pedidos
+                          </MenuText>
+                        </MenuItem>
           </>
         ) : (
           <>
-            <MenuItem onPress={() => navigation.navigate("MyOrders", { usuario_id: user.id })}>
+            {/* USER */}
+
+            <MenuItem
+              onPress={() =>
+                navigation.navigate(
+                  "MyOrders",
+                  {
+                    usuario_id: user.id,
+                  }
+                )
+              }
+            >
               <IconBox>
-                <Ionicons name="book-outline" size={25} color={theme.colors.primary} />
+                <Ionicons
+                  name="book-outline"
+                  size={25}
+                  color={theme.colors.primary}
+                />
               </IconBox>
-              <MenuText>Pedidos</MenuText>
+
+              <MenuText>
+                Pedidos
+              </MenuText>
             </MenuItem>
 
-            <MenuItem onPress={() => navigation.navigate("CardList")}>
+            <MenuItem
+              onPress={() =>
+                navigation.navigate(
+                  "CardList"
+                )
+              }
+            >
               <IconBox>
-                <Ionicons name="card-outline" size={25} color={theme.colors.primary} />
+                <Ionicons
+                  name="card-outline"
+                  size={25}
+                  color={theme.colors.primary}
+                />
               </IconBox>
-              <MenuText>Cartões</MenuText>
+
+              <MenuText>
+                Cartões
+              </MenuText>
             </MenuItem>
 
-            <MenuItem onPress={() => navigation.navigate("AddressList", { usuario_id: user.id })}>
+            <MenuItem
+              onPress={() =>
+                navigation.navigate(
+                  "AddressList",
+                  {
+                    usuario_id: user.id,
+                  }
+                )
+              }
+            >
               <IconBox>
-                <Ionicons name="map-outline" size={25} color={theme.colors.primary} />
+                <Ionicons
+                  name="map-outline"
+                  size={25}
+                  color={theme.colors.primary}
+                />
               </IconBox>
-              <MenuText>Endereços</MenuText>
+
+              <MenuText>
+                Endereços
+              </MenuText>
             </MenuItem>
           </>
         )}
 
+        {/* LOGOUT */}
+
         <MenuItem onPress={handleLogout}>
           <IconBox>
-            <Ionicons name="exit-outline" size={25} color={theme.colors.primary} />
+            <Ionicons
+              name="exit-outline"
+              size={25}
+              color={theme.colors.primary}
+            />
           </IconBox>
-          <MenuText>Sair</MenuText>
+
+          <MenuText>
+            Sair
+          </MenuText>
         </MenuItem>
       </MenuContainer>
 
-      <BottomNavBar active="profile" navigation={navigation} />
+      {/* NAVBAR CORRETA */}
+
+      {isAdmin ? (
+        <AdminBottomNavBar
+          active="profile"
+          navigation={navigation}
+        />
+      ) : (
+        <BottomNavBar
+          active="profile"
+          navigation={navigation}
+        />
+      )}
     </Screen>
   );
 }

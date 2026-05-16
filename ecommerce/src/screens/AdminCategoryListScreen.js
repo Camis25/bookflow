@@ -1,10 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FlatList, Alert, View, Modal, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  FlatList,
+  Alert,
+  View,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+
 import styled from 'styled-components/native';
+
 import { Ionicons } from '@expo/vector-icons';
+
 import { theme } from '../theme';
+
 import AdminBottomNavBar from '../components/AdminBottomNavBar';
-import { getAllCategorias } from '../services/database';
+
+import {
+  getAllCategorias,
+  insertCategoria,
+  updateCategoria,
+  deleteCategoria,
+} from '../services/database';
 
 // ─── Styled Components ────────────────────────────────────────────────────────
 
@@ -68,7 +85,6 @@ const NovoBtnText = styled.Text`
   font-weight: bold;
 `;
 
-// Categoria Tag
 const CategoryCard = styled.View`
   background-color: ${theme.colors.inputBg};
   border-radius: 16px;
@@ -104,8 +120,6 @@ const ActionIconBtn = styled.TouchableOpacity`
 const Loader = styled.ActivityIndicator`
   margin-top: 40px;
 `;
-
-// ─── Modal Form (Criar/Editar Categoria) ──────────────────────────────────────
 
 const Overlay = styled.View`
   flex: 1;
@@ -162,7 +176,10 @@ const ModalActionBtn = styled.TouchableOpacity`
   padding-vertical: 10px;
   padding-horizontal: 32px;
   margin-horizontal: 8px;
-  background-color: ${props => props.cancel ? '#a3d18c' : theme.colors.primary}; /* verde claro para cancel, azul para salvar baseado na imagem */
+  background-color: ${props =>
+    props.cancel
+      ? '#a3d18c'
+      : theme.colors.primary};
 `;
 
 const ModalActionBtnText = styled.Text`
@@ -173,67 +190,185 @@ const ModalActionBtnText = styled.Text`
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
-export default function AdminCategoryListScreen({ navigation }) {
+export default function AdminCategoryListScreen({
+  navigation,
+}) {
   const [categorias, setCategorias] = useState([]);
+
   const [loading, setLoading] = useState(true);
 
-  // States do Modal
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingCat, setEditingCat] = useState(null);
-  const [inputValue, setInputValue] = useState('');
+  const [modalVisible, setModalVisible] =
+    useState(false);
+
+  const [editingCat, setEditingCat] =
+    useState(null);
+
+  const [inputValue, setInputValue] =
+    useState('');
+
+  // ─── LOAD ───────────────────────────────────────────
 
   const loadCategorias = useCallback(async () => {
     try {
       setLoading(true);
+
       const data = await getAllCategorias();
-      if (data.length > 0) {
-        setCategorias(data);
-      } else {
-        setCategorias([{ id: 1, nome: 'Romance' }, { id: 2, nome: 'Terror' }]); // Mocks Default
-      }
-    } catch (_) {
-      setCategorias([{ id: 1, nome: 'Romance' }, { id: 2, nome: 'Terror' }]);
+
+      setCategorias(data || []);
+    } catch (error) {
+      console.log(error);
+
+      Alert.alert(
+        'Erro',
+        'Não foi possível carregar categorias.'
+      );
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { loadCategorias(); }, [loadCategorias]);
+  useEffect(() => {
+    loadCategorias();
+  }, [loadCategorias]);
+
+  // ─── NOVA CATEGORIA ────────────────────────────────
 
   const openNewCategory = () => {
     setEditingCat(null);
+
     setInputValue('');
+
     setModalVisible(true);
   };
+
+  // ─── EDITAR ────────────────────────────────────────
 
   const openEditCategory = (cat) => {
     setEditingCat(cat);
+
     setInputValue(cat.nome);
+
     setModalVisible(true);
   };
 
-  const handleSave = () => {
-    setModalVisible(false);
-    Alert.alert('Sucesso', 'Categoria salva com sucesso!');
-    // A integração real no DB pode ser feita aqui.
+  // ─── SALVAR ────────────────────────────────────────
+
+  const handleSave = async () => {
+    try {
+      if (!inputValue.trim()) {
+        Alert.alert(
+          'Erro',
+          'Digite o nome da categoria.'
+        );
+        return;
+      }
+
+      if (editingCat) {
+        await updateCategoria(
+          editingCat.id,
+          inputValue
+        );
+
+        Alert.alert(
+          'Sucesso',
+          'Categoria atualizada!'
+        );
+      } else {
+        await insertCategoria(inputValue);
+
+        Alert.alert(
+          'Sucesso',
+          'Categoria criada!'
+        );
+      }
+
+      setModalVisible(false);
+
+      setInputValue('');
+
+      setEditingCat(null);
+
+      // RECARREGA LISTA
+
+      await loadCategorias();
+    } catch (error) {
+      console.log(error);
+
+      Alert.alert(
+        'Erro',
+        'Falha ao salvar categoria.'
+      );
+    }
   };
 
+  // ─── DELETE ────────────────────────────────────────
+
   const handleDelete = (cat) => {
-    Alert.alert('Tem certeza?', 'Tem certeza que deseja excluir essa categoria?', [
-      { text: 'Não', style: 'cancel' },
-      { text: 'Sim', onPress: () => Alert.alert('Excluído', 'Categoria apagada.') }
-    ]);
+    Alert.alert(
+      'Tem certeza?',
+      'Deseja excluir essa categoria?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+
+        {
+          text: 'Excluir',
+
+          style: 'destructive',
+
+          onPress: async () => {
+            try {
+              await deleteCategoria(cat.id);
+
+              await loadCategorias();
+
+              Alert.alert(
+                'Sucesso',
+                'Categoria removida.'
+              );
+            } catch (error) {
+              console.log(error);
+
+              Alert.alert(
+                'Erro',
+                'Falha ao excluir categoria.'
+              );
+            }
+          },
+        },
+      ]
+    );
   };
+
+  // ─── ITEM ──────────────────────────────────────────
 
   const renderItem = ({ item }) => (
     <CategoryCard>
-      <CategoryLabel>{item.nome}</CategoryLabel>
+      <CategoryLabel>
+        {item.nome}
+      </CategoryLabel>
+
       <ActionsRow>
-        <ActionIconBtn onPress={() => handleDelete(item)}>
-          <Ionicons name="trash" size={14} color={theme.colors.textSecondary} />
+        <ActionIconBtn
+          onPress={() => handleDelete(item)}
+        >
+          <Ionicons
+            name="trash"
+            size={14}
+            color={theme.colors.textSecondary}
+          />
         </ActionIconBtn>
-        <ActionIconBtn onPress={() => openEditCategory(item)}>
-           <Ionicons name="pencil" size={14} color={theme.colors.textSecondary} />
+
+        <ActionIconBtn
+          onPress={() => openEditCategory(item)}
+        >
+          <Ionicons
+            name="pencil"
+            size={14}
+            color={theme.colors.textSecondary}
+          />
         </ActionIconBtn>
       </ActionsRow>
     </CategoryCard>
@@ -242,62 +377,121 @@ export default function AdminCategoryListScreen({ navigation }) {
   return (
     <Screen>
       <HeaderGroup>
-        <BackBtn onPress={() => navigation.goBack()}>
-           <Ionicons name="arrow-back" size={24} color={theme.colors.white} />
+        <BackBtn
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={theme.colors.white}
+          />
         </BackBtn>
-        <HeaderTitleText>Categorias</HeaderTitleText>
+
+        <HeaderTitleText>
+          Categorias
+        </HeaderTitleText>
       </HeaderGroup>
 
       <Content>
         <TopRow>
-          <MainTitle>Categorias</MainTitle>
+          <MainTitle>
+            Categorias
+          </MainTitle>
+
           <NovoBtn onPress={openNewCategory}>
-            <NovoBtnText>Novo</NovoBtnText>
+            <NovoBtnText>
+              Novo
+            </NovoBtnText>
           </NovoBtn>
         </TopRow>
 
         {loading ? (
-          <Loader size="large" color={theme.colors.primary} />
+          <Loader
+            size="large"
+            color={theme.colors.primary}
+          />
         ) : (
           <FlatList
             data={categorias}
-            keyExtractor={item => String(item.id)}
+            keyExtractor={(item) =>
+              String(item.id)
+            }
+            extraData={categorias}
             renderItem={renderItem}
             numColumns={2}
-            columnWrapperStyle={{ justifyContent: 'space-between', gap: 16 }}
+            columnWrapperStyle={{
+              justifyContent:
+                'space-between',
+              gap: 16,
+            }}
             style={{ width: '100%' }}
             showsVerticalScrollIndicator={false}
           />
         )}
       </Content>
 
-      <Modal transparent visible={modalVisible} animationType="fade">
+      {/* MODAL */}
+
+      <Modal
+        transparent
+        visible={modalVisible}
+        animationType="fade"
+      >
         <Overlay>
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <KeyboardAvoidingView
+            behavior={
+              Platform.OS === 'ios'
+                ? 'padding'
+                : undefined
+            }
+          >
             <ModalBox>
-              <ModalTitle>{editingCat ? 'Editar Categoria' : 'Nova Categoria'}</ModalTitle>
-              
+              <ModalTitle>
+                {editingCat
+                  ? 'Editar Categoria'
+                  : 'Nova Categoria'}
+              </ModalTitle>
+
               <ModalInputGroup>
-                <ModalLabel>Categoria</ModalLabel>
-                <ModalInput 
+                <ModalLabel>
+                  Categoria
+                </ModalLabel>
+
+                <ModalInput
                   value={inputValue}
                   onChangeText={setInputValue}
                 />
               </ModalInputGroup>
 
               <ButtonsRow>
-                <ModalActionBtn onPress={handleSave}>
-                  <ModalActionBtnText>Salvar</ModalActionBtnText>
+                <ModalActionBtn
+                  onPress={handleSave}
+                >
+                  <ModalActionBtnText>
+                    Salvar
+                  </ModalActionBtnText>
                 </ModalActionBtn>
-                <ModalActionBtn cancel onPress={() => setModalVisible(false)}>
-                  <ModalActionBtnText>Cancelar</ModalActionBtnText>
+
+                <ModalActionBtn
+                  cancel
+                  onPress={() =>
+                    setModalVisible(false)
+                  }
+                >
+                  <ModalActionBtnText>
+                    Cancelar
+                  </ModalActionBtnText>
                 </ModalActionBtn>
               </ButtonsRow>
             </ModalBox>
           </KeyboardAvoidingView>
         </Overlay>
       </Modal>
-      <AdminBottomNavBar active="document" navigation={navigation} />
+
+      <AdminBottomNavBar
+        active="document"
+        navigation={navigation}
+      />
     </Screen>
   );
 }

@@ -219,7 +219,7 @@ export default function AdminProductListScreen({ navigation }) {
     try {
       setModalVisible(false);
       await deleteLivro(selectedLivro.id);
-      loadLivros();
+      await loadLivros();
     } catch (_) {
       Alert.alert('Erro', 'Não foi possível excluir o produto.');
     }
@@ -268,6 +268,7 @@ export default function AdminProductListScreen({ navigation }) {
           <FlatList
             data={livros}
             keyExtractor={item => String(item.id)}
+            extraData={livros}
             renderItem={renderItem}
             numColumns={2}
             columnWrapperStyle={{ justifyContent: 'space-between' }}
