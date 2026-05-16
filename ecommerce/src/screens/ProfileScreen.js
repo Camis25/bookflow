@@ -6,7 +6,7 @@ import { theme } from "../theme";
 
 const Screen = styled.SafeAreaView`
   flex: 1;
-  background-color: ${theme.colors.background};
+  background-color: #ffffff;
 `;
 
 const Header = styled.View`
@@ -33,7 +33,7 @@ const UserName = styled.Text`
 `;
 
 const UserEmail = styled.Text`
-  color: ${theme.colors.white};
+  color: #ffffff;
   font-size: 14px;
   margin-top: 4px;
   text-decoration-line: underline;

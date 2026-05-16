@@ -9,10 +9,10 @@ const Screen = styled.SafeAreaView`
 
 const Header = styled.View`
   height: 52px;
-  background-color: ${theme.colors.primary};
+  background-color: #b7dea4;
   flex-direction: row;
   align-items: center;
-  padding-left: 16px;
+padding-left: 16px;
 `;
 
 const BackButton = styled.TouchableOpacity`
@@ -23,6 +23,7 @@ const BackText = styled.Text`
   color: #ffffff;
   font-size: 26px;
   font-weight: bold;
+  
 `;
 
 const HeaderTitle = styled.Text`

@@ -16,6 +16,8 @@ const db = isWeb
     }
   : SQLite.openDatabaseSync('bookflow.db');
 
+  
+
 // ─────────────────────────────────────────────
 // 🔐 LOGIN
 // ─────────────────────────────────────────────
@@ -244,6 +246,50 @@ export const initDatabase = async () => {
     console.error('Erro ao criar banco:', error);
 
     return false;
+  }
+};
+
+// ─────────────────────────────────────────────
+// 🔎 PESQUISAR LIVROS
+// ─────────────────────────────────────────────
+export const searchLivros = async (texto) => {
+  try {
+
+    return await db.getAllAsync(
+      `
+      SELECT
+        l.id_livro AS id,
+        l.titulo_livro AS titulo,
+        l.autor_livro,
+        l.preco,
+        l.capa_livro AS imagem_url,
+        c.nome_categoria AS categoria
+
+      FROM tb_livro l
+
+      LEFT JOIN tb_categoria c
+        ON l.id_categoria = c.id_categoria
+
+      WHERE
+        l.titulo_livro LIKE ?
+        OR l.autor_livro LIKE ?
+
+      ORDER BY l.titulo_livro ASC
+      `,
+      [
+        `%${texto}%`,
+        `%${texto}%`,
+      ]
+    );
+
+  } catch (error) {
+
+    console.error(
+      'Erro ao pesquisar livros:',
+      error
+    );
+
+    return [];
   }
 };
 
