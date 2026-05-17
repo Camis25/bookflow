@@ -3,6 +3,8 @@ import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { deleteCard } from "./cardsStorage";
+import { Modal, View, Text, TouchableOpacity } from "react-native";
 
 // ─────────────────────────────
 
@@ -34,7 +36,7 @@ const PageTitle = styled.Text`
   font-size: 18px;
   font-weight: 800;
   text-align: center;
-  margin-bottom: 200px;
+  margin-bottom: 40px;
 `;
 
 const NewButton = styled.TouchableOpacity`
@@ -96,17 +98,33 @@ export default function CardListScreen({ navigation }) {
   const usuarioId = 1;
 
   const [cards, setCards] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState(null);
 
+  // carregar cartões
   const loadCards = async () => {
     const raw = await AsyncStorage.getItem("@cards_usuario");
     const all = raw ? JSON.parse(raw) : {};
-
     setCards(all[usuarioId] || []);
   };
 
   useEffect(() => {
     loadCards();
   }, []);
+
+  // abrir modal
+  const confirmDelete = (id) => {
+    setSelectedCardId(id);
+    setModalVisible(true);
+  };
+
+  // deletar
+  const handleDelete = async () => {
+    await deleteCard(usuarioId, selectedCardId);
+    setModalVisible(false);
+    setSelectedCardId(null);
+    loadCards();
+  };
 
   return (
     <Screen>
@@ -120,7 +138,7 @@ export default function CardListScreen({ navigation }) {
         <NewButton
           onPress={() =>
             navigation.navigate("CardForm", {
-              onSave: loadCards, // 🔥 atualização imediata
+              onSave: loadCards,
             })
           }
         >
@@ -154,13 +172,76 @@ export default function CardListScreen({ navigation }) {
                 <Ionicons name="create-outline" size={22} color="#777" />
               </IconButton>
 
-              <IconButton>
+              <IconButton onPress={() => confirmDelete(card.id)}>
                 <Ionicons name="trash-outline" size={22} color="#777" />
               </IconButton>
             </ActionsRow>
           </CardBox>
         ))}
       </Content>
+
+      {/* ───── MODAL ───── */}
+      <Modal
+        transparent
+        visible={modalVisible}
+        animationType="fade"
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              padding: 20,
+              borderRadius: 12,
+              width: 280,
+            }}
+          >
+            <Text style={{ fontSize: 16, marginBottom: 20 }}>
+              Tem certeza que deseja excluir este cartão?
+            </Text>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                style={{
+                  padding: 10,
+                  backgroundColor: "#ccc",
+                  borderRadius: 8,
+                  flex: 1,
+                  marginRight: 10,
+                  alignItems: "center",
+                }}
+              >
+                <Text>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleDelete}
+                style={{
+                  padding: 10,
+                  backgroundColor: "red",
+                  borderRadius: 8,
+                  flex: 1,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#fff" }}>Excluir</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Screen>
   );
 }
