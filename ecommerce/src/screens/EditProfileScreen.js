@@ -1,9 +1,28 @@
-import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+  ActivityIndicator,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
+
 import styled from 'styled-components/native';
+
 import { Ionicons } from '@expo/vector-icons';
+
 import { theme } from '../theme';
-import { updateUsuario } from '../services/database';
+
+import {
+  updateUsuario,
+  getUsuarioById,
+} from '../services/database';
+
 import BottomNavBar from '../components/BottomNavBar';
 
 // ─── Styled Components ────────────────────────────────────────────────────────
@@ -18,16 +37,19 @@ const Content = styled.ScrollView`
   flex: 1;
 `;
 
-// O Header muda caso seja admin para ficar alinhado com o Blue Dashboard
 const HeaderGroup = styled.View`
   flex-direction: row;
   align-items: center;
-  ${props => props.isAdmin ? `
+
+  ${(props) =>
+    props.isAdmin
+      ? `
     background-color: ${theme.colors.primary};
     height: 80px;
     padding-horizontal: 16px;
     padding-top: 20px;
-  ` : `
+  `
+      : `
     padding: 16px;
     margin-top: 8px;
   `}
@@ -39,9 +61,12 @@ const BackBtn = styled.TouchableOpacity`
 `;
 
 const TitleText = styled.Text`
-  font-size: 20px;
+  font-size: 20;
   font-weight: 700;
-  color: ${props => props.isAdmin ? theme.colors.white : theme.colors.primary};
+  color: ${(props) =>
+    props.isAdmin
+      ? theme.colors.white
+      : theme.colors.primary};
 `;
 
 const InputGroup = styled.View`
@@ -68,7 +93,7 @@ const Input = styled.TextInput`
 `;
 
 const SaveButton = styled.TouchableOpacity`
-  background-color: ${theme.colors.secondary};
+  background-color: ${theme.colors.primary};
   border-radius: ${theme.metrics.borderRadius};
   min-height: 52px;
   justify-content: center;
@@ -78,7 +103,7 @@ const SaveButton = styled.TouchableOpacity`
 `;
 
 const SaveButtonText = styled.Text`
-  color: ${theme.colors.white};
+  color: #fff;
   font-size: 16px;
   font-weight: bold;
 `;
@@ -90,135 +115,256 @@ const ErrorText = styled.Text`
   margin-left: 4px;
 `;
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+// ─── SCREEN ───────────────────────────────────────────────────────────────────
 
-export default function EditProfileScreen({ route, navigation }) {
-  const { usuario } = route.params || {};
+export default function EditProfileScreen({ navigation }) {
 
-  // Em produção teríamos o AuthContext. Mock caso não tenha prop explícita
-  const isAdmin = usuario?.isAdmin || false;
+  const [usuarioId, setUsuarioId] = useState(null);
+  const [usuario, setUsuario] = useState(null);
 
-  const [nome, setNome] = useState(usuario?.nome || '');
-  const [email, setEmail] = useState(usuario?.email || '');
-  const [cpf, setCpf] = useState(usuario?.cpf || '');
-  const [dataNasc, setDataNasc] = useState(usuario?.data_nascimento || '');
+  const [loading, setLoading] = useState(true);
+
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [dataNasc, setDataNasc] = useState('');
+
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // MODAL
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const openDeleteModal = () => setShowDeleteModal(true);
+  const closeDeleteModal = () => setShowDeleteModal(false);
+
+  const handleConfirmDelete = () => {
+    setShowDeleteModal(false);
+
+    Alert.alert(
+      "Conta",
+      "Aqui você pode chamar deleteUsuario() e fazer logout"
+    );
+
+    // Exemplo real:
+    // await deleteUsuario(usuarioId);
+    // navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+  };
+
+  useEffect(() => {
+    carregarUsuario();
+  }, []);
+
+  const carregarUsuario = async () => {
+    try {
+      setLoading(true);
+
+      const usuarioStorage = await AsyncStorage.getItem("usuarioLogado");
+
+      if (!usuarioStorage) {
+        Alert.alert("Erro", "Usuário não encontrado");
+        return;
+      }
+
+      const usuarioLogado = JSON.parse(usuarioStorage);
+
+      setUsuarioId(usuarioLogado.id_usuario);
+
+      const data = await getUsuarioById(usuarioLogado.id_usuario);
+
+      if (data) {
+        setUsuario(data);
+        setNome(data.nome_usuario || "");
+        setEmail(data.email_usuario || "");
+        setCpf(data.cpf || "");
+        setDataNasc(data.data_nascimento || "");
+      }
+
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isAdmin = usuario?.tipo_usuario === 'admin';
 
   const validate = () => {
     const errs = {};
     if (!nome.trim()) errs.nome = 'Nome obrigatório';
     if (!email.trim()) errs.email = 'E-mail obrigatório';
-    else if (!/\S+@\S+\.\S+/.test(email)) errs.email = 'E-mail inválido';
     return errs;
   };
 
   const handleSave = async () => {
     const errs = validate();
+
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
 
-    if (!usuario?.id) {
-      Alert.alert('Sucesso', 'Dados atualizados com sucesso!');
-      navigation.goBack();
-      return;
-    }
-
     try {
       setSaving(true);
-      await updateUsuario(usuario.id, nome, email, null, cpf, dataNasc);
-      Alert.alert('Sucesso', 'Dados atualizados com sucesso!');
+
+      await updateUsuario(
+        usuarioId,
+        nome,
+        cpf,
+        dataNasc,
+        email,
+        usuario?.senha_usuario
+      );
+
+      Alert.alert("Sucesso", "Atualizado!");
       navigation.goBack();
+
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar as alterações.');
+      console.log(error);
+      Alert.alert("Erro", "Falha ao salvar");
     } finally {
       setSaving(false);
     }
   };
 
+  if (loading) {
+    return (
+      <Screen>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
+
       <HeaderGroup isAdmin={isAdmin}>
         <BackBtn onPress={() => navigation.goBack()}>
-           <Ionicons name="arrow-back" size={24} color={isAdmin ? theme.colors.white : theme.colors.secondary} />
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </BackBtn>
-        <TitleText isAdmin={isAdmin}>Editar dados pessoais</TitleText>
+
+        <TitleText isAdmin={isAdmin}>
+          Editar Perfil
+        </TitleText>
       </HeaderGroup>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <Content showsVerticalScrollIndicator={false}>
-          <View style={{marginTop: isAdmin ? 16 : 0}}>
-            <TitleText style={{alignSelf: 'center', marginBottom: 24, fontSize: 18, color: theme.colors.primary}}>
-              Dados Pessoais
-            </TitleText>
-          </View>
-          
+        <Content>
+
           <InputGroup>
             <Label>Nome</Label>
-            <Input
-              value={nome}
-              onChangeText={v => { setNome(v); setErrors(e => ({ ...e, nome: null })); }}
-              placeholder="Seu nome completo"
-              placeholderTextColor={theme.colors.textSecondary}
-            />
-            {errors.nome && <ErrorText>{errors.nome}</ErrorText>}
+            <Input value={nome} onChangeText={setNome} />
           </InputGroup>
 
           <InputGroup>
             <Label>CPF</Label>
-            <Input
-              value={cpf}
-              onChangeText={setCpf}
-              keyboardType="numeric"
-              placeholder="000.000.000-00"
-              placeholderTextColor={theme.colors.textSecondary}
-              maxLength={14}
-            />
+            <Input value={cpf} onChangeText={setCpf} />
           </InputGroup>
 
           <InputGroup>
             <Label>Data de nascimento</Label>
-            <Input
-              value={dataNasc}
-              onChangeText={setDataNasc}
-              placeholder="DD/MM/AAAA"
-              placeholderTextColor={theme.colors.textSecondary}
-              keyboardType="numeric"
-              maxLength={10}
-            />
+            <Input value={dataNasc} onChangeText={setDataNasc} />
           </InputGroup>
 
           <InputGroup>
             <Label>E-mail</Label>
-            <Input
-              value={email}
-              onChangeText={v => { setEmail(v); setErrors(e => ({ ...e, email: null })); }}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              placeholder="seu@email.com"
-              placeholderTextColor={theme.colors.textSecondary}
-            />
-            {errors.email && <ErrorText>{errors.email}</ErrorText>}
+            <Input value={email} onChangeText={setEmail} />
           </InputGroup>
 
-          {/* Na foto de Admin tem um botão invisivel de Excluir da Conta. Placeholder */}
-          {isAdmin && (
-             <View style={{alignItems: 'center', marginTop: 16}}>
-                <Label style={{color: theme.colors.primary, textDecorationLine: 'underline'}}>Solicitar exclusão da conta</Label>
-             </View>
+          {/* LINK EXCLUSÃO */}
+          {!isAdmin && (
+            <View style={{ alignItems: "center", marginTop: 20 }}>
+              <Text
+                onPress={openDeleteModal}
+                style={{
+                  color: theme.colors.primary,
+                  textDecorationLine: "underline",
+                }}
+              >
+                Solicitar exclusão da conta
+              </Text>
+            </View>
           )}
 
-          <SaveButton onPress={handleSave} disabled={saving} style={{ backgroundColor: theme.colors.primary, borderRadius: 24 }}>
-            <SaveButtonText>{saving ? 'Salvando…' : 'Salvar'}</SaveButtonText>
+          <SaveButton onPress={handleSave}>
+            <SaveButtonText>
+              {saving ? "Salvando..." : "Salvar"}
+            </SaveButtonText>
           </SaveButton>
 
         </Content>
       </KeyboardAvoidingView>
+
+      {/* MODAL */}
+      {showDeleteModal && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: "85%",
+              backgroundColor: "#fff",
+              padding: 20,
+              borderRadius: 16,
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              Excluir conta
+            </Text>
+
+            <Text style={{ marginVertical: 20 }}>
+              Deseja realmente excluir sua conta?
+            </Text>
+
+            <View style={{ flexDirection: "row" }}>
+
+              <TouchableOpacity
+                onPress={closeDeleteModal}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  backgroundColor: "#ccc",
+                  marginRight: 10,
+                  borderRadius: 8,
+                  alignItems: "center",
+                }}
+              >
+                <Text>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleConfirmDelete}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  backgroundColor: "red",
+                  borderRadius: 8,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#fff" }}>
+                  Confirmar
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+          </View>
+        </View>
+      )}
 
     </Screen>
   );

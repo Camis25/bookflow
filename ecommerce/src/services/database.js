@@ -46,9 +46,13 @@ export const initDatabase = async () => {
   try {
     await db.execAsync(`
 
+     
+
       PRAGMA foreign_keys = OFF;
 
-      CREATE TABLE IF NOT EXISTS tb_usuario (
+      
+
+      CREATE TABLE IF NOT EXISTS  tb_usuario (
         id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
         nome_usuario TEXT,
         email_usuario TEXT UNIQUE,
@@ -525,6 +529,62 @@ export const createUsuario = async (
     throw error;
   }
 };
+
+export const getUsuarioById = async (id) => {
+  try {
+    return await db.getFirstAsync(
+      `
+      SELECT *
+      FROM tb_usuario
+      WHERE id_usuario = ?
+      `,
+      [id]
+    );
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+export const updateUsuario = async (
+  id,
+  nome,
+  cpf,
+  dataNascimento,
+  email,
+  senha
+) => {
+  try {
+    await db.runAsync(
+      `
+      UPDATE tb_usuario
+
+      SET
+        nome_usuario = ?,
+        cpf = ?,
+        data_nascimento = ?,
+        email_usuario = ?,
+        senha_usuario = ?
+
+      WHERE id_usuario = ?
+      `,
+      [
+        nome,
+        cpf,
+        dataNascimento,
+        email,
+        senha,
+        id,
+      ]
+    );
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
 
 
 // ─────────────────────────────────────────────

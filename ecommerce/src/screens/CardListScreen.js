@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../theme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// ─────────────────────────────
 
 const Screen = styled.SafeAreaView`
   flex: 1;
@@ -31,7 +34,7 @@ const PageTitle = styled.Text`
   font-size: 18px;
   font-weight: 800;
   text-align: center;
-  margin-bottom: 34px;
+  margin-bottom: 200px;
 `;
 
 const NewButton = styled.TouchableOpacity`
@@ -55,8 +58,8 @@ const CardBox = styled.View`
   width: 260px;
   min-height: 140px;
   align-self: center;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
   elevation: 4;
+  margin-bottom: 24px;
 `;
 
 const CardTitle = styled.Text`
@@ -87,15 +90,24 @@ const IconButton = styled.TouchableOpacity`
   margin-left: 18px;
 `;
 
-const CARDS = [
-  {
-    id: 1,
-    title: "Meu Cartão",
-    brand: "Mastercard com final 0000",
-  },
-];
+// ─────────────────────────────
 
 export default function CardListScreen({ navigation }) {
+  const usuarioId = 1;
+
+  const [cards, setCards] = useState([]);
+
+  const loadCards = async () => {
+    const raw = await AsyncStorage.getItem("@cards_usuario");
+    const all = raw ? JSON.parse(raw) : {};
+
+    setCards(all[usuarioId] || []);
+  };
+
+  useEffect(() => {
+    loadCards();
+  }, []);
+
   return (
     <Screen>
       <Header>
@@ -105,26 +117,45 @@ export default function CardListScreen({ navigation }) {
       <Content showsVerticalScrollIndicator={false}>
         <PageTitle>Meus Cartões</PageTitle>
 
-        <NewButton onPress={() => navigation.navigate("CardForm")}>
+        <NewButton
+          onPress={() =>
+            navigation.navigate("CardForm", {
+              onSave: loadCards, // 🔥 atualização imediata
+            })
+          }
+        >
           <NewButtonText>Novo</NewButtonText>
         </NewButton>
 
-        {CARDS.map((card) => (
+        {cards.map((card) => (
           <CardBox key={card.id}>
-            <CardTitle>{card.title}</CardTitle>
+            <CardTitle>{card.name}</CardTitle>
 
             <CardInfoRow>
-              <Ionicons name="card-outline" size={22} color="#777777" />
-              <CardText>{card.brand}</CardText>
+              <Ionicons name="card-outline" size={22} color="#777" />
+              <CardText>
+                {card.brand === "visa"
+                  ? "VISA"
+                  : card.brand === "master"
+                  ? "MASTERCARD"
+                  : "ELO"}
+              </CardText>
             </CardInfoRow>
 
             <ActionsRow>
-              <IconButton onPress={() => navigation.navigate("CardForm", { card })}>
-                <Ionicons name="create-outline" size={22} color="#777777" />
+              <IconButton
+                onPress={() =>
+                  navigation.navigate("CardForm", {
+                    card,
+                    onSave: loadCards,
+                  })
+                }
+              >
+                <Ionicons name="create-outline" size={22} color="#777" />
               </IconButton>
 
               <IconButton>
-                <Ionicons name="trash-outline" size={22} color="#777777" />
+                <Ionicons name="trash-outline" size={22} color="#777" />
               </IconButton>
             </ActionsRow>
           </CardBox>

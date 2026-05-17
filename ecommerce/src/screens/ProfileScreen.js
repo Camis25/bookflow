@@ -126,7 +126,7 @@ export default function ProfileScreen({
             navigation.navigate(
               "EditProfile",
               {
-                usuario: user,
+               usuarioId: user.id_usuario,
               }
             )
           }
