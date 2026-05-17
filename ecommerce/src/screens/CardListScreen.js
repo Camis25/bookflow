@@ -160,22 +160,23 @@ export default function CardListScreen({ navigation }) {
               </CardText>
             </CardInfoRow>
 
-            <ActionsRow>
-              <IconButton
-                onPress={() =>
-                  navigation.navigate("CardForm", {
-                    card,
-                    onSave: loadCards,
-                  })
-                }
-              >
-                <Ionicons name="create-outline" size={22} color="#777" />
-              </IconButton>
+           <ActionsRow>
+  <IconButton
+    onPress={() =>
+      navigation.navigate("CardForm", {
+        card,
+        mode: "edit",
+        onSave: loadCards,
+      })
+    }
+  >
+    <Ionicons name="create-outline" size={22} color="#777" />
+  </IconButton>
 
-              <IconButton onPress={() => confirmDelete(card.id)}>
-                <Ionicons name="trash-outline" size={22} color="#777" />
-              </IconButton>
-            </ActionsRow>
+  <IconButton onPress={() => confirmDelete(card.id)}>
+    <Ionicons name="trash-outline" size={22} color="#777" />
+  </IconButton>
+</ActionsRow>
           </CardBox>
         ))}
       </Content>

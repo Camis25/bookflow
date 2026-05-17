@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components/native";
 import { theme } from "../theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -78,19 +78,12 @@ const BrandText = styled.Text`
   font-weight: bold;
 `;
 
-const SelectedInfo = styled.Text`
-  text-align: center;
-  margin-bottom: 10px;
-  font-weight: bold;
-  color: ${theme.colors.primary};
-`;
-
 const SaveButton = styled.TouchableOpacity`
-  background: ${theme.colors.primary};
+  background-color: ${theme.colors.primary};
   padding: 14px;
   border-radius: 24px;
   align-items: center;
-  margin-top: 10px;
+  margin-top: 20px;
 `;
 
 const SaveText = styled.Text`
@@ -104,6 +97,8 @@ export default function CardFormScreen({ navigation, route }) {
   const usuarioId = 1;
 
   const editingCard = route?.params?.card;
+  const mode = route?.params?.mode;
+  const onSave = route?.params?.onSave;
 
   const [brand, setBrand] = useState("visa");
   const [number, setNumber] = useState("");
@@ -115,6 +110,7 @@ export default function CardFormScreen({ navigation, route }) {
 
   const [errors, setErrors] = useState({});
 
+  // ───────── preencher edição
   useEffect(() => {
     if (editingCard) {
       setBrand(editingCard.brand);
@@ -127,67 +123,85 @@ export default function CardFormScreen({ navigation, route }) {
     }
   }, []);
 
-  // ──────────────── MÁSCARAS ────────────────
+  // ───────── máscara cartão
+  const maskCard = (v) =>
+    v.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
 
-  const maskCardNumber = (value) => {
-    return value
-      .replace(/\D/g, "")
-      .replace(/(.{4})/g, "$1 ")
-      .trim();
+  const maskMonth = (v) => v.replace(/\D/g, "").slice(0, 2);
+  const maskYear = (v) => v.replace(/\D/g, "").slice(0, 2);
+  const maskCVV = (v) => v.replace(/\D/g, "").slice(0, 4);
+
+  // ───────── detectar bandeira
+  const detectBrand = (number) => {
+    const clean = number.replace(/\s/g, "");
+
+    if (clean.startsWith("4")) return "visa";
+
+    if (/^5[1-5]/.test(clean) || clean.startsWith("2"))
+      return "master";
+
+    const elo = [
+      "636368",
+      "438935",
+      "504175",
+      "451416",
+      "636297",
+      "5067",
+      "5090",
+    ];
+
+    if (elo.some((p) => clean.startsWith(p))) return "elo";
+
+    return "unknown";
   };
 
-  const maskMonth = (value) => {
-    return value.replace(/\D/g, "").slice(0, 2);
-  };
-
-  const maskYear = (value) => {
-    return value.replace(/\D/g, "").slice(0, 2);
-  };
-
-  const maskCVV = (value) => {
-    return value.replace(/\D/g, "").slice(0, 4);
-  };
-
-  // ──────────────── VALIDAÇÃO ────────────────
-
+  // ───────── validação
   const validate = () => {
-    let errs = {};
+    let err = {};
 
-    if (!number || number.replace(/\s/g, "").length !== 16)
-      errs.number = "Número do cartão inválido";
+    const cleanNumber = number.replace(/\s/g, "");
 
-    if (!holder) errs.holder = "Nome obrigatório";
+    if (!cleanNumber || cleanNumber.length < 13)
+      err.number = "Número inválido";
+
+    const detected = detectBrand(number);
+
+    if (detected === "unknown") {
+      err.brand = "Bandeira não reconhecida";
+    } else if (detected !== brand) {
+      err.brand = `Cartão é ${detected.toUpperCase()}, não ${brand.toUpperCase()}`;
+    }
+
+    if (!holder) err.holder = "Nome obrigatório";
 
     if (!month || month.length !== 2)
-      errs.month = "Mês inválido";
+      err.month = "Mês inválido";
 
     if (!year || year.length !== 2)
-      errs.year = "Ano inválido";
+      err.year = "Ano inválido";
 
     if (!cvv || cvv.length < 3)
-      errs.cvv = "CVV inválido";
+      err.cvv = "CVV inválido";
 
-    if (!name) errs.name = "Nome do cartão obrigatório";
+    if (!name) err.name = "Nome do cartão obrigatório";
 
-    setErrors(errs);
+    setErrors(err);
 
-    return Object.keys(errs).length === 0;
+    return Object.keys(err).length === 0;
   };
 
-  // ──────────────── SALVAR ────────────────
-
+  // ───────── salvar
   const handleSave = async () => {
     if (!validate()) {
-      Alert.alert("Erro", "Preencha todos os campos corretamente");
+      Alert.alert("Erro", "Preencha corretamente os campos");
       return;
     }
 
     const raw = await AsyncStorage.getItem("@cards_usuario");
     const all = raw ? JSON.parse(raw) : {};
-
     const userCards = all[usuarioId] || [];
 
-    const newCard = {
+    const card = {
       id: editingCard?.id || Date.now().toString(),
       brand,
       number,
@@ -200,12 +214,12 @@ export default function CardFormScreen({ navigation, route }) {
 
     let updated;
 
-    if (editingCard) {
+    if (mode === "edit") {
       updated = userCards.map((c) =>
-        c.id === editingCard.id ? newCard : c
+        c.id === editingCard.id ? card : c
       );
     } else {
-      updated = [...userCards, newCard];
+      updated = [...userCards, card];
     }
 
     all[usuarioId] = updated;
@@ -215,56 +229,76 @@ export default function CardFormScreen({ navigation, route }) {
       JSON.stringify(all)
     );
 
+    if (onSave) onSave();
+
     navigation.goBack();
   };
-
-  // ──────────────── UI ────────────────
 
   return (
     <Screen>
       <Header>
-        <HeaderTitle>Novo cartão</HeaderTitle>
+        <HeaderTitle>
+          {mode === "edit" ? "Editar cartão" : "Novo cartão"}
+        </HeaderTitle>
       </Header>
 
       <Content>
+        <Title>
+          {mode === "edit" ? "Editar Cartão" : "Novo Cartão"}
+        </Title>
 
-        <Title>Novo Cartão</Title>
-
-        <Label>Bandeira: {brand.toUpperCase()}</Label>
+        {/* BANDEIRA */}
+        <Label>Bandeira</Label>
 
         <Row>
-          <BrandButton active={brand === "visa"} bg="#1e5bb8" onPress={() => setBrand("visa")}>
+          <BrandButton
+            bg="#1e5bb8"
+            active={brand === "visa"}
+            onPress={() => setBrand("visa")}
+          >
             <BrandText active={brand === "visa"}>VISA</BrandText>
           </BrandButton>
 
-          <BrandButton active={brand === "master"} bg="#111" onPress={() => setBrand("master")}>
+          <BrandButton
+            bg="#111"
+            active={brand === "master"}
+            onPress={() => setBrand("master")}
+          >
             <BrandText active={brand === "master"}>MC</BrandText>
           </BrandButton>
 
-          <BrandButton active={brand === "elo"} bg="#000" onPress={() => setBrand("elo")}>
+          <BrandButton
+            bg="#000"
+            active={brand === "elo"}
+            onPress={() => setBrand("elo")}
+          >
             <BrandText active={brand === "elo"}>ELO</BrandText>
           </BrandButton>
         </Row>
 
-        <Label>Número do cartão</Label>
+        {errors.brand && <ErrorText>{errors.brand}</ErrorText>}
+
+        {/* NÚMERO */}
+        <Label>Número</Label>
         <Input
           value={number}
-          onChangeText={(v) => setNumber(maskCardNumber(v))}
+          onChangeText={(v) => setNumber(maskCard(v))}
           keyboardType="numeric"
         />
         {errors.number && <ErrorText>{errors.number}</ErrorText>}
 
+        {/* TITULAR */}
         <Label>Nome titular</Label>
         <Input value={holder} onChangeText={setHolder} />
         {errors.holder && <ErrorText>{errors.holder}</ErrorText>}
 
+        {/* VALIDADE */}
         <Row>
           <Input
             style={{ flex: 1 }}
             placeholder="MM"
             value={month}
             onChangeText={(v) => setMonth(maskMonth(v))}
-            keyboardType="numeric"
           />
 
           <Input
@@ -272,14 +306,13 @@ export default function CardFormScreen({ navigation, route }) {
             placeholder="AA"
             value={year}
             onChangeText={(v) => setYear(maskYear(v))}
-            keyboardType="numeric"
           />
         </Row>
 
-        {(errors.month || errors.year) && (
-          <ErrorText>Validade inválida</ErrorText>
-        )}
+        {errors.month && <ErrorText>{errors.month}</ErrorText>}
+        {errors.year && <ErrorText>{errors.year}</ErrorText>}
 
+        {/* CVV */}
         <Label>CVV</Label>
         <Input
           value={cvv}
@@ -288,14 +321,16 @@ export default function CardFormScreen({ navigation, route }) {
         />
         {errors.cvv && <ErrorText>{errors.cvv}</ErrorText>}
 
+        {/* NOME CARTÃO */}
         <Label>Nome do cartão</Label>
         <Input value={name} onChangeText={setName} />
         {errors.name && <ErrorText>{errors.name}</ErrorText>}
 
         <SaveButton onPress={handleSave}>
-          <SaveText>Salvar cartão</SaveText>
+          <SaveText>
+            {mode === "edit" ? "Atualizar" : "Salvar"}
+          </SaveText>
         </SaveButton>
-
       </Content>
     </Screen>
   );
