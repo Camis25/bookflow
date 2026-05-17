@@ -109,26 +109,6 @@ const FallbackTitle = styled.Text`
   color: ${theme.colors.text};
 `;
 
-// Mock
-const MOCK_BOOKS = [
-  { id: 1, titulo: "A Hipótese do Amor", categoria: "Romance", preco: 49.9 },
-  { id: 2, titulo: "Jane Eyre", categoria: "Romance", preco: 34.9 },
-  { id: 3, titulo: "Nós Já Moramos Aqui", categoria: "Suspense", preco: 45.0 },
-  {
-    id: 4,
-    titulo: "A Paciente Silenciosa",
-    categoria: "Suspense",
-    preco: 55.0,
-  },
-  { id: 5, titulo: "O Poder do Hábito", categoria: "Autoajuda", preco: 39.9 },
-  {
-    id: 6,
-    titulo: "Um Livro de Auto-ajuda",
-    categoria: "Autoajuda",
-    preco: 29.9,
-  },
-];
-
 export default function StoreHomeScreen({ navigation }) {
   const [allBooks, setAllBooks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -137,9 +117,9 @@ export default function StoreHomeScreen({ navigation }) {
     try {
       setLoading(true);
       const books = await getAllLivros();
-      setAllBooks(books.length > 0 ? books : MOCK_BOOKS);
+      setAllBooks(books.length > 0 ? books : []);
     } catch {
-      setAllBooks(MOCK_BOOKS);
+      setAllBooks([]);
     } finally {
       setLoading(false);
     }
@@ -151,7 +131,7 @@ export default function StoreHomeScreen({ navigation }) {
 
   const getBooksByCategory = (catName) => {
     return allBooks.filter(
-      (b) => b.categoria?.toLowerCase() === catName.toLowerCase(),
+      (b) => b.categoria === catName,
     );
   };
 
@@ -260,6 +240,7 @@ export default function StoreHomeScreen({ navigation }) {
             {renderBookGroup("Romance", getBooksByCategory("Romance"))}
             {renderBookGroup("Suspense", getBooksByCategory("Suspense"))}
             {renderBookGroup("Autoajuda", getBooksByCategory("Autoajuda"))}
+            {renderBookGroup("Terror", getBooksByCategory("Terror"))}
           </View>
         )}
       </Content>

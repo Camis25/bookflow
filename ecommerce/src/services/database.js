@@ -335,9 +335,12 @@ export const getAllLivros = async () => {
         l.preco,
         l.estoque,
         l.capa_livro AS imagem_url,
-        l.id_categoria AS categoria
+        c.nome_categoria AS categoria
 
       FROM tb_livro l
+
+      LEFT JOIN tb_categoria c
+        ON l.id_categoria = c.id_categoria
     `);
   } catch (error) {
     console.error(error);

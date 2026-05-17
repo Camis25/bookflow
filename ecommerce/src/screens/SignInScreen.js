@@ -51,7 +51,7 @@ export default function SignInScreen({ navigation }) {
       await createUsuario(nome, email, cpf, dataNascimento);
 
       Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
-      navigation.navigate("UserList");
+      navigation.navigate("Login");
     } catch (error) {
       console.log("Erro ao salvar usuário:", error);
       Alert.alert("Erro", "Não foi possível salvar o usuário.");
@@ -103,7 +103,7 @@ export default function SignInScreen({ navigation }) {
           <Text style={styles.buttonText}>Cadastrar-se</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate("LogIn")}>
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
           <Text style={[styles.label, { textAlign: "center", marginTop: 20, color: "#666" }]}>
             Já possui uma conta?{" "}
             <Text style={{ color: theme.colors.primary, fontWeight: "bold" }}>Entrar</Text>

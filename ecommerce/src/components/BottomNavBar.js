@@ -25,7 +25,7 @@ export default function BottomNavBar({ active, navigation }) {
   
   return (
     <NavBarContainer>
-      <NavItem onPress={() => navigation.navigate('StoreHome')}>
+      <NavItem onPress={() => navigation.navigate('Home')}>
         <Ionicons 
           name={active === 'home' ? 'home' : 'home-outline'} 
           size={24} 
@@ -33,7 +33,7 @@ export default function BottomNavBar({ active, navigation }) {
         />
       </NavItem>
 
-      <NavItem onPress={() => navigation.navigate('SearchScreen')} /* Temporário: a lupa tá em cima, o meio parece 'livros', futuramente MyOrders/Library */>
+      <NavItem onPress={() => navigation.navigate('Search')} /* Temporário: a lupa tá em cima, o meio parece 'livros', futuramente MyOrders/Library */>
         <Ionicons 
           name={active === 'book' ? 'book' : 'book-outline'} 
           size={24} 
