@@ -246,8 +246,17 @@ export default function SearchScreen({
 
   }, [query, doSearch]);
 
-  const handleBuy = (book) => {
-    navigation.navigate('BookDetails', { book });
+  // ─────────────────────────────
+  // 📖 ABRIR LIVRO
+  // ─────────────────────────────
+  const openBook = (book) => {
+
+    navigation.navigate(
+      'BookDetails',
+      {
+        livro: book,
+      }
+    );
   };
 
   // ─────────────────────────────

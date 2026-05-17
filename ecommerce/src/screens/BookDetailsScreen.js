@@ -12,92 +12,222 @@ import { Ionicons } from "@expo/vector-icons";
 import BottomNavBar from "../components/BottomNavBar";
 import { theme } from "../theme";
 
-export default function BookDetailsScreen({ navigation }) {
-  const [modalVisible, setModalVisible] = React.useState(false);
+export default function BookDetailsScreen({
+  navigation,
+  route,
+}) {
+  const [modalVisible, setModalVisible] =
+    React.useState(false);
+
+  // 📚 Livro recebido da navegação
+  const livro = route.params?.livro;
+
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* HEADER */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={26} color="#fff" />
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons
+              name="arrow-back"
+              size={26}
+              color="#fff"
+            />
           </TouchableOpacity>
         </View>
 
-        {/* IMAGEM SOBREPOSTA */}
+        {/* IMAGEM */}
         <View style={styles.imageWrapper}>
           <Image
-            source={require("../../assets/images/AHipotese.jpg")}
+            source={
+              livro?.imagem_url
+                ? { uri: livro.imagem_url }
+                : require("../../assets/images/AHipotese.jpg")
+            }
             style={styles.image}
           />
         </View>
 
         {/* CARD */}
         <View style={styles.card}>
-          <Text style={styles.title}>A Hipótese do Amor</Text>
+          {/* TÍTULO */}
+          <Text style={styles.title}>
+            {livro?.titulo}
+          </Text>
 
           {/* AVALIAÇÃO */}
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
-            <Text style={styles.rating}>★★★★★ <Text style={{ fontSize: 12, color: theme.colors.primary }}>(Ver avaliações)</Text></Text>
+          <TouchableOpacity
+            onPress={() =>
+              setModalVisible(true)
+            }
+          >
+            <Text style={styles.rating}>
+              ★★★★★{" "}
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: theme.colors.primary,
+                }}
+              >
+                (Ver avaliações)
+              </Text>
+            </Text>
           </TouchableOpacity>
 
           {/* PREÇO + ÍCONES */}
           <View style={styles.priceRow}>
-            <Text style={styles.price}>R$ 43,81</Text>
+            <Text style={styles.price}>
+              R${" "}
+              {Number(
+                livro?.preco || 0
+              ).toFixed(2)}
+            </Text>
 
             <View style={styles.icons}>
-              <Ionicons name="bag-outline" size={22} />
-              <Ionicons name="heart-outline" size={22} />
+              <Ionicons
+                name="bag-outline"
+                size={22}
+              />
+
+              <Ionicons
+                name="heart-outline"
+                size={22}
+              />
             </View>
           </View>
 
+          {/* ENTREGA */}
           <Text style={styles.delivery}>
-            Entrega GRÁTIS: sexta-feira, 6 de março
+            Entrega GRÁTIS:
+            sexta-feira, 6 de março
           </Text>
 
           {/* DESCRIÇÃO */}
           <Text style={styles.description}>
-            Quando um namoro de mentira entre cientistas encontra a irresistível
-            força da atração, todas as teorias cuidadosamente calculadas sobre o
-            amor são postas à prova.
+            {livro?.descricao ||
+              "Descrição não disponível."}
           </Text>
 
+          {/* BOTÃO CARRINHO */}
           <TouchableOpacity
-            style={[styles.outlineButton, { borderColor: theme.colors.primary }]}
-            onPress={() => navigation.navigate("Cart")}
+            style={[
+              styles.outlineButton,
+              {
+                borderColor:
+                  theme.colors.primary,
+              },
+            ]}
+            onPress={() =>
+              navigation.navigate("Cart", {
+                livro,
+              })
+            }
           >
-            <Text style={[styles.outlineText, { color: theme.colors.primary }]}>Adicionar ao carrinho</Text>
+            <Text
+              style={[
+                styles.outlineText,
+                {
+                  color:
+                    theme.colors.primary,
+                },
+              ]}
+            >
+              Adicionar ao carrinho
+            </Text>
           </TouchableOpacity>
 
+          {/* BOTÃO COMPRAR */}
           <TouchableOpacity
-            style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
-            onPress={() => navigation.navigate("Cart")}
+            style={[
+              styles.primaryButton,
+              {
+                backgroundColor:
+                  theme.colors.primary,
+              },
+            ]}
+            onPress={() =>
+              navigation.navigate("Cart", {
+                livro,
+              })
+            }
           >
-            <Text style={styles.primaryText}>Comprar agora</Text>
+            <Text style={styles.primaryText}>
+              Comprar agora
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Modal de Avaliações */}
-      <Modal visible={modalVisible} transparent animationType="slide">
+      {/* MODAL AVALIAÇÕES */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Avaliações</Text>
-            <ScrollView style={{ maxHeight: 300 }}>
-              <Text style={{ marginBottom: 10, fontStyle: 'italic' }}>"Livro excelente! Recomendo a todos." - João</Text>
-              <Text style={{ marginBottom: 10, fontStyle: 'italic' }}>"Muito envolvente desde a primeira página." - Maria</Text>
+            <Text style={styles.modalTitle}>
+              Avaliações
+            </Text>
+
+            <ScrollView
+              style={{ maxHeight: 300 }}
+            >
+              <Text
+                style={{
+                  marginBottom: 10,
+                  fontStyle: "italic",
+                }}
+              >
+                "Livro excelente!
+                Recomendo a todos." -
+                João
+              </Text>
+
+              <Text
+                style={{
+                  marginBottom: 10,
+                  fontStyle: "italic",
+                }}
+              >
+                "Muito envolvente desde
+                a primeira página." -
+                Maria
+              </Text>
             </ScrollView>
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}>
-              <Text style={styles.primaryText}>Fechar</Text>
+
+            <TouchableOpacity
+              onPress={() =>
+                setModalVisible(false)
+              }
+              style={[
+                styles.primaryButton,
+                {
+                  backgroundColor:
+                    theme.colors.primary,
+                },
+              ]}
+            >
+              <Text
+                style={styles.primaryText}
+              >
+                Fechar
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {/* NAVBAR FIXA */}
-      <BottomNavBar navigation={navigation} />
+      {/* NAVBAR */}
+      <BottomNavBar
+        navigation={navigation}
+      />
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -105,7 +235,8 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor:
+      theme.colors.primary,
     height: 140,
     paddingTop: 60,
     paddingHorizontal: 20,
@@ -113,7 +244,7 @@ const styles = StyleSheet.create({
 
   imageWrapper: {
     alignItems: "center",
-    marginTop: -60, // 🔥 faz a imagem "flutuar"
+    marginTop: -60,
   },
 
   image: {
@@ -144,7 +275,8 @@ const styles = StyleSheet.create({
 
   priceRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent:
+      "space-between",
     alignItems: "center",
     marginTop: 10,
   },
@@ -175,20 +307,17 @@ const styles = StyleSheet.create({
   outlineButton: {
     marginTop: 20,
     borderWidth: 2,
-    borderColor: theme.colors.primary,
     borderRadius: 50,
     padding: 15,
     alignItems: "center",
   },
 
   outlineText: {
-    color: theme.colors.primary,
     fontWeight: "600",
   },
 
   primaryButton: {
     marginTop: 10,
-    backgroundColor: theme.colors.primary,
     borderRadius: 50,
     padding: 15,
     alignItems: "center",
@@ -198,21 +327,25 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
   },
+
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor:
+      "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
   },
+
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
     minHeight: 300,
   },
+
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 15,
   },
 });

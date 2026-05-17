@@ -152,14 +152,7 @@ export default function StoreHomeScreen({ navigation }) {
             <BookCoverButton
               onPress={() =>
                 navigation.navigate("BookDetails", {
-                  itens: [
-                    {
-                      livro_id: item.id,
-                      titulo: item.titulo,
-                      quantidade: 1,
-                      preco_unitario: item.preco,
-                    },
-                  ],
+                  livro: item,
                 })
               }
             >
