@@ -11,6 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import BottomNavBar from "../components/BottomNavBar";
 import { theme } from "../theme";
+import { addToCarrinho } from "../services/database";
 
 export default function BookDetailsScreen({
   navigation,
@@ -21,6 +22,22 @@ export default function BookDetailsScreen({
 
   // 📚 Livro recebido da navegação
   const livro = route.params?.livro;
+  
+  const usuarioId = 1;
+
+  const adicionarCarrinho = async () => {
+    try {
+      await addToCarrinho(
+        usuarioId,
+        livro.id,
+        1
+      );
+
+      navigation.navigate("Cart");
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -119,11 +136,7 @@ export default function BookDetailsScreen({
                   theme.colors.primary,
               },
             ]}
-            onPress={() =>
-              navigation.navigate("Cart", {
-                livro,
-              })
-            }
+            onPress={adicionarCarrinho}
           >
             <Text
               style={[

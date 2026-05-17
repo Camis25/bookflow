@@ -319,7 +319,7 @@ export default function CartScreen({ navigation, route }) {
                   style={styles.button}
                   onPress={() =>
                     navigation.navigate(
-                      "CheckoutScreen",
+                      "Checkout",
                       {
                         itens: itensSelecionados,
                         total,
